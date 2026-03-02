@@ -1,0 +1,25 @@
+*.iml
+.gradle
+.idea
+.DS_Store
+build
+captures
+.externalNativeBuild
+.cxx
+.vscode/settings.json
+local.properties
+xcuserdata
+.kotlin
+#So we don't accidentally commit our private keys
+*.gpg
+gradle.properties
+gradle.local.properties
+build/
+
+library/build/
+# NPM packages (generated)
+*.tgz
+node_modules/
+ocr-feature/
+react-native/
+

@@ -1,0 +1,248 @@
+package com.gearui.kit.imagepicker.presentation.ui.components
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.gearui.kit.imagepicker.gearui.GearImagePickerConfig
+import com.gearui.kit.imagepicker.gearui.GearImagePickerLauncher
+import com.gearui.kit.imagepicker.data.orchestrators.GalleryPickerOrchestrator
+import com.gearui.kit.imagepicker.data.orchestrators.PhotoCaptureOrchestrator
+import com.gearui.kit.imagepicker.domain.config.CameraCaptureConfig
+import com.gearui.kit.imagepicker.domain.config.CameraPermissionDialogConfig
+import com.gearui.kit.imagepicker.domain.config.CropConfig
+import com.gearui.kit.imagepicker.domain.config.ImagePickerConfig
+import com.gearui.kit.imagepicker.domain.models.CompressionLevel
+import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.PhotoResult
+
+
+@Suppress("FunctionNaming","TrailingWhitespace")
+@Composable
+actual fun ImagePickerLauncher(
+    config: ImagePickerConfig
+) {
+    var showDialog by remember { mutableStateOf(!config.directCameraLaunch) }
+    var askCameraPermission by remember { mutableStateOf(config.directCameraLaunch) }
+    var launchCamera by remember { mutableStateOf(false) }
+    var launchGallery by remember { mutableStateOf(false) }
+    
+    var selectedPhotoForCrop by remember { mutableStateOf<PhotoResult?>(null) }
+    var showCropView by remember { mutableStateOf(false) }
+    
+    val onCameraPermissionGranted = {
+        askCameraPermission = false
+        launchCamera = true
+    }
+    val onCameraPermissionDenied = {
+        askCameraPermission = false
+        config.onDismiss()
+    }
+    val onCameraFinished = { launchCamera = false }
+    val onGalleryFinished = { launchGallery = false }
+    
+    if (showDialog) {
+        if (config.customPickerDialog != null) {
+            config.customPickerDialog.invoke(
+                {
+                    showDialog = false
+                    askCameraPermission = true
+                },
+                {
+                    showDialog = false
+                    launchGallery = true
+                },
+                {
+                    showDialog = false
+                    config.onDismiss()
+                }
+            )
+        } else {
+            GearImagePickerLauncher(
+                visible = showDialog,
+                config = GearImagePickerConfig(
+                    title = config.dialogTitle,
+                    takePhotoText = config.takePhotoText,
+                    selectFromGalleryText = config.selectFromGalleryText,
+                    cancelText = config.cancelText,
+                    onTakePhoto = {
+                        showDialog = false
+                        askCameraPermission = true
+                    },
+                    onSelectFromGallery = {
+                        showDialog = false
+                        launchGallery = true
+                    },
+                    onCancel = {
+                        showDialog = false
+                        config.onDismiss()
+                    }
+                )
+            )
+        }
+    }
+
+    if (askCameraPermission) {
+        handleCameraPermission(
+            cameraCaptureConfig = config.cameraCaptureConfig,
+            onGranted = onCameraPermissionGranted,
+            onDenied = onCameraPermissionDenied
+        )
+    }
+
+    if (launchCamera) {
+        launchCameraInternal(
+            onPhotoCaptured = { result ->
+                val shouldShowCrop = config.cameraCaptureConfig.cropConfig.enabled || config.enableCrop
+                if (shouldShowCrop) {
+                    selectedPhotoForCrop = result
+                    showCropView = true
+                } else {
+                    config.onPhotoCaptured(result)
+                }
+            },
+            onError = config.onError,
+            onDismiss = config.onDismiss,
+            onFinish = onCameraFinished,
+            compressionLevel = config.cameraCaptureConfig.compressionLevel,
+            includeExif = config.cameraCaptureConfig.includeExif
+        )
+    }
+
+    if (launchGallery) {
+        launchGalleryInternal(
+            onPhotoSelected = { result ->
+                val photoResult = PhotoResult(
+                    uri = result.uri,
+                    width = result.width,
+                    height = result.height,
+                    fileName = result.fileName,
+                    fileSize = result.fileSize
+                )
+                
+                val shouldShowCrop = config.cameraCaptureConfig.cropConfig.enabled || config.enableCrop
+                if (shouldShowCrop) {
+                    selectedPhotoForCrop = photoResult
+                    showCropView = true
+                } else {
+                    config.onPhotosSelected?.invoke(listOf(result))
+                    config.onPhotoCaptured(photoResult)
+                }
+            },
+            onError = config.onError,
+            onDismiss = config.onDismiss,
+            onFinish = onGalleryFinished,
+            compressionLevel = config.cameraCaptureConfig.compressionLevel
+        )
+    }
+    
+    if (showCropView && selectedPhotoForCrop != null) {        
+        ImageCropView(
+            photoResult = selectedPhotoForCrop!!,
+            cropConfig = if (config.cameraCaptureConfig.cropConfig.enabled) {
+                config.cameraCaptureConfig.cropConfig
+            } else if (config.enableCrop) {
+                CropConfig(
+                    enabled = true,
+                    circularCrop = true, 
+                    squareCrop = true
+                )
+            } else {
+                config.cameraCaptureConfig.cropConfig
+            },
+            onAccept = { croppedResult ->
+                config.onPhotoCaptured(croppedResult)
+                showCropView = false
+                selectedPhotoForCrop = null
+            },
+            onCancel = {
+                showCropView = false
+                selectedPhotoForCrop = null
+                config.onDismiss()
+            }
+        )
+    }
+}
+
+
+
+@Composable
+private fun handleCameraPermission(
+    cameraCaptureConfig: CameraCaptureConfig,
+    onGranted: () -> Unit,
+    onDenied: () -> Unit
+) {
+    val dialogConfig = CameraPermissionDialogConfig(
+        titleDialogConfig = "Camera permission required",
+        descriptionDialogConfig = "Camera permission is required to capture photos. Please grant it in settings",
+        btnDialogConfig = "Grant permission",
+        titleDialogDenied = "Camera permission denied",
+        descriptionDialogDenied = "Camera permission is required to capture photos. Please grant the permissions",
+        btnDialogDenied = "Open settings",
+        customDeniedDialog = cameraCaptureConfig.permissionAndConfirmationConfig.customDeniedDialog,
+        customSettingsDialog = cameraCaptureConfig.permissionAndConfirmationConfig.customSettingsDialog,
+        cancelButtonText = cameraCaptureConfig.permissionAndConfirmationConfig.cancelButtonTextIOS,
+        onCancelPermissionConfigIOS = cameraCaptureConfig.permissionAndConfirmationConfig.onCancelPermissionConfigIOS
+    )
+    RequestCameraPermission(
+        dialogConfig = dialogConfig,
+        onPermissionPermanentlyDenied = {},
+        onResult = { granted: Boolean -> if (granted) onGranted() else onDenied() },
+        customPermissionHandler = null
+    )
+}
+
+@Composable
+private fun launchCameraInternal(
+    onPhotoCaptured: (PhotoResult) -> Unit,
+    onError: (Exception) -> Unit,
+    onDismiss: () -> Unit,
+    onFinish: () -> Unit,
+    compressionLevel: CompressionLevel? = null,
+    includeExif: Boolean = false
+) {
+    LaunchedEffect(Unit) {
+        PhotoCaptureOrchestrator.launchCamera(
+            onPhotoCaptured = {
+                onPhotoCaptured(it)
+                onFinish()
+            },
+            onError = {
+                onError(it)
+                onFinish()
+            },
+            onDismiss = {
+                onDismiss()
+                onFinish()
+            },
+            compressionLevel = compressionLevel,
+            includeExif = includeExif
+        )
+    }
+}
+
+@Composable
+private fun launchGalleryInternal(
+    onPhotoSelected: (GalleryPhotoResult) -> Unit,
+    onError: (Exception) -> Unit,
+    onDismiss: () -> Unit,
+    onFinish: () -> Unit,
+    compressionLevel: CompressionLevel? = null
+) {
+    LaunchedEffect(Unit) {
+        GalleryPickerOrchestrator.launchGallery(
+            onPhotoSelected = {
+                onPhotoSelected(it)
+                onFinish()
+            },
+            onError = {
+                onError(it)
+                onFinish()
+            },
+            onDismiss = onDismiss,
+            compressionLevel = compressionLevel
+        )
+    }
+}

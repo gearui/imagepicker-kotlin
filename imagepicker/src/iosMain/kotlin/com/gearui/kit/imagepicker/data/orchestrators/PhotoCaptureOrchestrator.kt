@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.data.orchestrators
 import com.gearui.kit.imagepicker.presentation.presenters.CameraPresenter
 import com.gearui.kit.imagepicker.domain.utils.ViewControllerProvider
 import com.gearui.kit.imagepicker.domain.exceptions.PhotoCaptureException
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
 
 /**
@@ -13,7 +13,7 @@ import com.gearui.kit.imagepicker.domain.models.CompressionLevel
  */
 object PhotoCaptureOrchestrator {
     fun launchCamera(
-        onPhotoCaptured: (PhotoResult) -> Unit,
+        onPhotoCaptured: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit,
         onDismiss: () -> Unit,
         compressionLevel: CompressionLevel? = null,

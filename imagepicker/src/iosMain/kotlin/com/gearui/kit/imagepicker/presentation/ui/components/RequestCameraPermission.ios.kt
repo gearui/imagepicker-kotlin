@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.gearui.kit.imagepicker.domain.config.CameraPermissionDialogConfig
+import com.gearui.kit.imagepicker.presentation.config.CameraPermissionDialogConfig
 import com.gearui.kit.imagepicker.domain.utils.AppLifecycleObserver
 import com.gearui.kit.imagepicker.domain.utils.openSettings
 import com.gearui.kit.imagepicker.domain.utils.requestCameraAccess

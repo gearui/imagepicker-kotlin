@@ -3,15 +3,15 @@ package com.gearui.kit.imagepicker.domain.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 
 @Composable
 actual fun applyCrop(
-    photoResult: PhotoResult,
+    photoResult: ImageAsset,
     cropRect: Rect,
     canvasSize: Size,
     isCircularCrop: Boolean,
-    onComplete: (PhotoResult) -> Unit
+    onComplete: (ImageAsset) -> Unit
 ) {
     // En JS/Web, el recorte se puede implementar usando Canvas API
     // Por ahora devolvemos el resultado original

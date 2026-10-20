@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cached
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -25,18 +23,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.gearui.kit.imagepicker.data.camera.CameraController
-import com.gearui.kit.imagepicker.domain.config.CameraPreviewConfig
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.BackgroundColor
+import com.gearui.kit.imagepicker.presentation.config.CameraPreviewConfig
+import com.gearui.kit.imagepicker.domain.config.CropConfig
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.BackgroundColor
 import com.gearui.kit.imagepicker.domain.models.CapturePhotoPreference
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.MimeType
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
 import com.gearui.kit.imagepicker.presentation.ui.extensions.activity
 import com.gearui.kit.imagepicker.presentation.ui.utils.rememberCameraManager
 import kotlinx.coroutines.CoroutineScope
@@ -50,7 +50,7 @@ private const val CAMERA_INITIALIZATION_DELAY = 0L
 @Composable
 fun CameraCapturePreview(
     preference: CapturePhotoPreference,
-    onPhotoResult: (PhotoResult) -> Unit,
+    onPhotoResult: (ImageAsset) -> Unit,
     onError: (Exception) -> Unit,
     previewConfig: CameraPreviewConfig = CameraPreviewConfig(),
     compressionLevel: CompressionLevel? = null,
@@ -75,7 +75,7 @@ fun CameraCapturePreview(
     }
     var openGallery by remember { mutableStateOf(false) }
     val isDark = isSystemInDarkTheme()
-    val backgroundColor = if (isDark) MaterialTheme.colors.background else BackgroundColor
+    val backgroundColor = if (isDark) Color(0xFF111318) else BackgroundColor
     val resolvedButtonColor = previewConfig.uiConfig.buttonColor ?: Color.Gray
     val resolvedIconColor = previewConfig.uiConfig.iconColor ?: Color.White
     val resolvedButtonSize = previewConfig.uiConfig.buttonSize ?: 56.dp
@@ -94,21 +94,11 @@ fun CameraCapturePreview(
 
     if (openGallery) {
         GalleryPickerLauncher(
-            onPhotosSelected = { results: List<GalleryPhotoResult> ->
+            onPhotosSelected = { results: List<ImageAsset> ->
                 openGallery = false
                 val result = results.firstOrNull()
                 if (result != null) {
-                    onPhotoResult(
-                        PhotoResult(
-                            uri = result.uri,
-                            width = result.width,
-                            height = result.height,
-                            fileName = result.fileName,
-                            fileSize = result.fileSize,
-                            mimeType = result.mimeType,
-                            exif = result.exif
-                        )
-                    )
+                    onPhotoResult(result)
                 }
             },
             onError = { error: Exception ->
@@ -120,7 +110,7 @@ fun CameraCapturePreview(
             mimeTypes = previewConfig.galleryConfig.mimeTypes,
             selectionLimit = 1L,
             cameraCaptureConfig = null,
-            enableCrop = false,
+            cropConfig = CropConfig(enabled = false),
             includeExif = previewConfig.galleryConfig.includeExif
         )
     }
@@ -177,10 +167,10 @@ fun CameraCapturePreview(
                 },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = previewConfig.uiConfig.galleryIcon ?: Icons.Default.PhotoLibrary,
+            androidx.compose.foundation.Image(
+                painter = rememberVectorPainter(previewConfig.uiConfig.galleryIcon ?: Icons.Default.PhotoLibrary),
                 contentDescription = "Open gallery button",
-                tint = resolvedIconColor
+                colorFilter = ColorFilter.tint(resolvedIconColor)
             )
         }
         Box(
@@ -210,10 +200,10 @@ fun CameraCapturePreview(
                 },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = previewConfig.uiConfig.switchCameraIcon ?: Icons.Default.Cached,
+            androidx.compose.foundation.Image(
+                painter = rememberVectorPainter(previewConfig.uiConfig.switchCameraIcon ?: Icons.Default.Cached),
                 contentDescription = "Switch camera",
-                tint = resolvedIconColor
+                colorFilter = ColorFilter.tint(resolvedIconColor)
             )
         }
         FlashOverlay(visible = stateHolder?.showFlashOverlay ?: false)

@@ -1,18 +1,18 @@
 package com.gearui.kit.imagepicker.presentation.presenters
 
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import platform.UIKit.UIViewController
 
 fun presentPickerViewController(
     viewController: UIViewController,
-    onPhotoSelected: (GalleryPhotoResult) -> Unit,
+    onPhotoSelected: (ImageAsset) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     selectionLimit: Long,
     compressionLevel: CompressionLevel? = null,
     includeExif: Boolean = false,
-    onPhotosSelected: ((List<GalleryPhotoResult>) -> Unit)? = null
+    onPhotosSelected: ((List<ImageAsset>) -> Unit)? = null
 ) {
     try {
         val pickerViewController = createPHPickerController(

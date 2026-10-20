@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.domain.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 
 /**
  * WASM platform implementation of applyCrop.
@@ -12,11 +12,11 @@ import com.gearui.kit.imagepicker.domain.models.PhotoResult
  */
 @Composable
 actual fun applyCrop(
-    photoResult: PhotoResult,
+    photoResult: ImageAsset,
     cropRect: Rect,
     canvasSize: Size,
     isCircularCrop: Boolean,
-    onComplete: (PhotoResult) -> Unit
+    onComplete: (ImageAsset) -> Unit
 ) {
     // Stub implementation - WASM doesn't support image cropping
     // Return the original photoResult unchanged

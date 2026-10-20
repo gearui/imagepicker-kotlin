@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.domain.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 
 /**
  * Desktop implementation of applyCrop.
@@ -12,11 +12,11 @@ import com.gearui.kit.imagepicker.domain.models.PhotoResult
  */
 @Composable
 actual fun applyCrop(
-    photoResult: PhotoResult,
+    photoResult: ImageAsset,
     cropRect: Rect,
     canvasSize: Size,
     isCircularCrop: Boolean,
-    onComplete: (PhotoResult) -> Unit
+    onComplete: (ImageAsset) -> Unit
 ) {
     // Crop functionality is not available on Desktop
     // For now, just return the original result

@@ -1,4 +1,4 @@
-package com.gearui.kit.imagepicker.domain.config
+package com.gearui.kit.imagepicker.presentation.config
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp

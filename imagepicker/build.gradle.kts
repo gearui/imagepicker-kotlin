@@ -14,7 +14,6 @@ plugins {
     id("jacoco")
     id("io.gitlab.arturbosch.detekt")
     id("org.jetbrains.dokka") version "1.9.20"
-    kotlin("plugin.serialization") version "1.9.22"
 }
 
 version = rootProject.version
@@ -375,7 +374,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 // GearUI runtime and components (migration target UI system)
-                implementation(project(":gearui-kit-local"))
+                implementation("com.gearui:gearui-kit")
 
                 api(libs.compose.runtime)
                 implementation(libs.compose.ui)
@@ -387,13 +386,6 @@ kotlin {
                 implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
                 implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
                 implementation(libs.components.resources)
-                // OCR dependencies
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-                // Ktor dependencies for HTTP client
-                implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.content.negotiation)
-                implementation(libs.ktor.serialization.kotlinx.json)
-                implementation(libs.ktor.client.logging)
             }
         }
         val androidMain by getting {
@@ -411,8 +403,6 @@ kotlin {
                 implementation(libs.androidx.material.icons.extended)
                 // EXIF interface for metadata extraction
                 implementation(libs.androidx.exifinterface)
-                 // Ktor Android engine
-                implementation(libs.ktor.client.okhttp)
             }
         }
         val iosResourcesDir =
@@ -423,8 +413,6 @@ kotlin {
                 duplicatesStrategy = DuplicatesStrategy.INCLUDE
             }
             dependencies {
-                // Ktor iOS engine
-                implementation(libs.ktor.client.darwin)
             }
         }
         

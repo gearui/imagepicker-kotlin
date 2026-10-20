@@ -3,39 +3,64 @@ package com.gearui.kit.imagepicker.presentation.ui.components
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import com.gearui.kit.imagepicker.presentation.ui.screens.CameraCaptureView
-import com.gearui.kit.imagepicker.domain.config.ImagePickerConfig
 import com.gearui.kit.imagepicker.domain.config.CropConfig
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerConfig
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
+import com.gearui.kit.imagepicker.domain.models.ImagePickerResult
 import com.gearui.kit.imagepicker.gearui.GearImagePickerConfig
 import com.gearui.kit.imagepicker.gearui.GearImagePickerLauncher
+import com.gearui.kit.imagepicker.presentation.ui.screens.CameraCaptureView
 import com.gearui.kit.imagepicker.presentation.ui.extensions.activity
-import org.jetbrains.compose.resources.stringResource
 import imagepicker.imagepicker.generated.resources.Res
 import imagepicker.imagepicker.generated.resources.invalid_context_error
+import org.jetbrains.compose.resources.stringResource
+
+private fun ImageAsset.toPickerSingleResult(): ImagePickerResult = ImagePickerResult.Single(this)
 
 @Suppress("FunctionNaming")
 @Composable
 actual fun ImagePickerLauncher(
-    config: ImagePickerConfig
+    config: ImagePickerConfig,
+    visible: Boolean
 ) {
-    val context = LocalContext.current
-    val activity = context.activity
-    if (activity !is ComponentActivity) {
-        config.onError(Exception(stringResource(Res.string.invalid_context_error)))
+    val currentConfig by rememberUpdatedState(config)
+    if (!visible) {
         return
     }
 
-    var showPicker by remember { mutableStateOf(!config.directCameraLaunch) }
-    var launchCamera by remember { mutableStateOf(config.directCameraLaunch) }
+    val context = LocalContext.current
+    val activity = context.activity
+    if (activity !is ComponentActivity) {
+        currentConfig.onError(Exception(stringResource(Res.string.invalid_context_error)))
+        return
+    }
+
+    var showPicker by remember { mutableStateOf(false) }
+    var launchCamera by remember { mutableStateOf(false) }
     var launchGallery by remember { mutableStateOf(false) }
 
+    LaunchedEffect(visible, config.directCameraLaunch, config.directGalleryLaunch) {
+        if (visible) {
+            showPicker = !currentConfig.directCameraLaunch && !currentConfig.directGalleryLaunch
+            launchCamera = currentConfig.directCameraLaunch
+            launchGallery = currentConfig.directGalleryLaunch
+        } else {
+            showPicker = false
+            launchCamera = false
+            launchGallery = false
+        }
+    }
+
     if (showPicker) {
-        if (config.customPickerDialog != null) {
-            config.customPickerDialog.invoke(
+        val customPickerDialog = currentConfig.customPickerDialog
+        if (customPickerDialog != null) {
+            customPickerDialog(
                 {
                     showPicker = false
                     launchCamera = true
@@ -46,17 +71,17 @@ actual fun ImagePickerLauncher(
                 },
                 {
                     showPicker = false
-                    config.onDismiss()
+                    currentConfig.onDismiss()
                 }
             )
         } else {
             GearImagePickerLauncher(
                 visible = showPicker,
                 config = GearImagePickerConfig(
-                    title = config.dialogTitle,
-                    takePhotoText = config.takePhotoText,
-                    selectFromGalleryText = config.selectFromGalleryText,
-                    cancelText = config.cancelText,
+                    title = currentConfig.dialogTitle,
+                    takePhotoText = currentConfig.takePhotoText,
+                    selectFromGalleryText = currentConfig.selectFromGalleryText,
+                    cancelText = currentConfig.cancelText,
                     onTakePhoto = {
                         showPicker = false
                         launchCamera = true
@@ -67,7 +92,7 @@ actual fun ImagePickerLauncher(
                     },
                     onCancel = {
                         showPicker = false
-                        config.onDismiss()
+                        currentConfig.onDismiss()
                     }
                 )
             )
@@ -79,36 +104,27 @@ actual fun ImagePickerLauncher(
             activity = activity,
             onPhotoResult = { result ->
                 launchCamera = false
-                config.onPhotoCaptured(result)
+                currentConfig.onResult(result.toPickerSingleResult())
             },
             onPhotosSelected = { selected ->
                 launchCamera = false
-                config.onPhotosSelected?.invoke(selected)
+                currentConfig.onResult(ImagePickerResult.Multiple(selected))
             },
             onError = { exception ->
                 launchCamera = false
-                config.onError(exception)
+                currentConfig.onError(exception)
             },
             onDismiss = {
                 launchCamera = false
-                config.onDismiss()
+                currentConfig.onDismiss()
             },
-            cameraCaptureConfig = config.cameraCaptureConfig.copy(
-                preference = config.cameraCaptureConfig.preference,
-                includeExif = config.cameraCaptureConfig.includeExif,
-                cropConfig = if (config.cameraCaptureConfig.cropConfig.enabled) {
-                    config.cameraCaptureConfig.cropConfig
-                } else if (config.enableCrop) {
-                    CropConfig(
-                        enabled = true,
-                        circularCrop = true,
-                        squareCrop = true
-                    )
-                } else {
-                    config.cameraCaptureConfig.cropConfig
-                }
+            cameraCaptureConfig = currentConfig.cameraCaptureConfig.copy(
+                preference = currentConfig.cameraCaptureConfig.preference,
+                includeExif = currentConfig.cameraCaptureConfig.includeExif
             ),
-            enableCrop = config.cameraCaptureConfig.cropConfig.enabled || config.enableCrop
+            galleryConfig = currentConfig.galleryConfig,
+            cropConfig = if (currentConfig.cropConfig.enabled) currentConfig.cropConfig else CropConfig(enabled = false),
+            enableCrop = currentConfig.cropConfig.enabled
         )
     }
 
@@ -116,22 +132,27 @@ actual fun ImagePickerLauncher(
         GalleryPickerLauncher(
             onPhotosSelected = { results ->
                 launchGallery = false
-                config.onPhotosSelected?.invoke(results)
+                val result = if (results.size == 1) {
+                    ImagePickerResult.Single(results.first())
+                } else {
+                    ImagePickerResult.Multiple(results)
+                }
+                currentConfig.onResult(result)
             },
             onError = {
                 launchGallery = false
-                config.onError(it)
+                currentConfig.onError(it)
             },
             onDismiss = {
                 launchGallery = false
-                config.onDismiss()
+                currentConfig.onDismiss()
             },
-            allowMultiple = config.cameraCaptureConfig.galleryConfig.allowMultiple,
-            mimeTypes = config.cameraCaptureConfig.galleryConfig.mimeTypes,
-            selectionLimit = config.cameraCaptureConfig.galleryConfig.selectionLimit.toLong(),
-            cameraCaptureConfig = config.cameraCaptureConfig,
-            enableCrop = config.cameraCaptureConfig.cropConfig.enabled || config.enableCrop,
-            includeExif = config.cameraCaptureConfig.galleryConfig.includeExif
+            allowMultiple = currentConfig.galleryConfig.allowMultiple,
+            mimeTypes = currentConfig.galleryConfig.mimeTypes,
+            selectionLimit = currentConfig.galleryConfig.selectionLimit.toLong(),
+            cameraCaptureConfig = currentConfig.cameraCaptureConfig,
+            cropConfig = currentConfig.cropConfig,
+            includeExif = currentConfig.galleryConfig.includeExif
         )
     }
 }

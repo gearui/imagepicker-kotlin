@@ -1,7 +1,7 @@
 package com.gearui.kit.imagepicker.presentation.ui.components
 
 import androidx.compose.runtime.Composable
-import com.gearui.kit.imagepicker.domain.config.CameraPermissionDialogConfig
+import com.gearui.kit.imagepicker.presentation.config.CameraPermissionDialogConfig
 
 @Composable
 expect fun RequestCameraPermission(

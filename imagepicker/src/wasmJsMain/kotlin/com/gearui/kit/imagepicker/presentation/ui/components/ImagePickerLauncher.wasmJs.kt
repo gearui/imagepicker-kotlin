@@ -1,18 +1,25 @@
 package com.gearui.kit.imagepicker.presentation.ui.components
 
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import com.gearui.kit.imagepicker.domain.config.ImagePickerConfig
+import androidx.compose.runtime.LaunchedEffect
+import com.gearui.kit.imagepicker.domain.exceptions.ImagePickerErrorCode
+import com.gearui.kit.imagepicker.domain.exceptions.UnsupportedPlatformException
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerConfig
 
-/**
- * WASM platform implementation of ImagePickerLauncher.
- * Note: Camera and gallery functionality is not available in WASM platform.
- * This is a stub implementation for compatibility.
- */
 @Composable
 actual fun ImagePickerLauncher(
-    config: ImagePickerConfig
+    config: ImagePickerConfig,
+    visible: Boolean
 ) {
-    // Stub implementation - WASM doesn't support camera/gallery
-    Text("ImagePicker not supported on WASM platform")
+    if (!visible) return
+
+    LaunchedEffect(visible) {
+        config.onError(
+            UnsupportedPlatformException(
+                code = ImagePickerErrorCode.PLATFORM_NOT_SUPPORTED,
+                message = "ImagePicker is not supported on WASM yet"
+            )
+        )
+        config.onDismiss()
+    }
 }

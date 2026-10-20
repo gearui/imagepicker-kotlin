@@ -1,7 +1,7 @@
 package com.gearui.kit.imagepicker.data.delegates
 
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.PhotosUI.PHPickerResult
 import platform.PhotosUI.PHPickerViewController
@@ -13,8 +13,8 @@ import platform.darwin.dispatch_get_main_queue
 
 @OptIn(ExperimentalForeignApi::class)
 class PHPickerDelegate(
-    private val onPhotoSelected: (GalleryPhotoResult) -> Unit,
-    private val onPhotosSelected: ((List<GalleryPhotoResult>) -> Unit)? = null,
+    private val onPhotoSelected: (ImageAsset) -> Unit,
+    private val onPhotosSelected: ((List<ImageAsset>) -> Unit)? = null,
     private val onError: (Exception) -> Unit,
     private val onDismiss: () -> Unit,
     private val compressionLevel: CompressionLevel? = null,
@@ -60,7 +60,7 @@ class PHPickerDelegate(
         processingQueue.start()
     }
 
-    private fun handleProcessingComplete(results: List<GalleryPhotoResult>) {
+    private fun handleProcessingComplete(results: List<ImageAsset>) {
         if (onPhotosSelected != null) {
             onPhotosSelected.invoke(results)
         } else {

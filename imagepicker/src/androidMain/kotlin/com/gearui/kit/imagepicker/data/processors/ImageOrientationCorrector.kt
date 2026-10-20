@@ -8,13 +8,13 @@ import android.graphics.Matrix
 import androidx.exifinterface.media.ExifInterface
 import com.gearui.kit.imagepicker.data.camera.CameraController.CameraType
 import com.gearui.kit.imagepicker.domain.config.HighPerformanceConfig
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.ORIENTATION_FLIP_HORIZONTAL_X
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.ORIENTATION_FLIP_HORIZONTAL_Y
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.ORIENTATION_FLIP_VERTICAL_X
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.ORIENTATION_FLIP_VERTICAL_Y
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.ORIENTATION_ROTATE_180
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.ORIENTATION_ROTATE_270
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.ORIENTATION_ROTATE_90
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.ORIENTATION_FLIP_HORIZONTAL_X
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.ORIENTATION_FLIP_HORIZONTAL_Y
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.ORIENTATION_FLIP_VERTICAL_X
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.ORIENTATION_FLIP_VERTICAL_Y
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.ORIENTATION_ROTATE_180
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.ORIENTATION_ROTATE_270
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.ORIENTATION_ROTATE_90
 import java.io.File
 import java.io.FileOutputStream
 

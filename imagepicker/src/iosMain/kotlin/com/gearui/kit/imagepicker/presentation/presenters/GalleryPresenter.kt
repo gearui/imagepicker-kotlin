@@ -1,7 +1,7 @@
 package com.gearui.kit.imagepicker.presentation.presenters
 
 import com.gearui.kit.imagepicker.data.delegates.GalleryDelegate
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
 import platform.UIKit.UIImagePickerController
 import platform.UIKit.UIImagePickerControllerSourceType
@@ -17,7 +17,7 @@ object GalleryPresenter {
 
     fun presentGallery(
         viewController: UIViewController,
-        onPhotoSelected: (GalleryPhotoResult) -> Unit,
+        onPhotoSelected: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit,
         onDismiss: () -> Unit,
         compressionLevel: CompressionLevel? = null,
@@ -37,7 +37,7 @@ object GalleryPresenter {
     }
 
     private fun createImagePickerController(
-        onPhotoSelected: (GalleryPhotoResult) -> Unit,
+        onPhotoSelected: (ImageAsset) -> Unit,
         onDismiss: () -> Unit,
         compressionLevel: CompressionLevel? = null,
         includeExif: Boolean = false
@@ -47,7 +47,7 @@ object GalleryPresenter {
             allowsEditing = false
 
             val cleanup = { galleryDelegate = null }
-            val wrappedOnPhotoSelected: (GalleryPhotoResult) -> Unit = { result ->
+            val wrappedOnPhotoSelected: (ImageAsset) -> Unit = { result ->
                 onPhotoSelected(result)
                 cleanup()
             }

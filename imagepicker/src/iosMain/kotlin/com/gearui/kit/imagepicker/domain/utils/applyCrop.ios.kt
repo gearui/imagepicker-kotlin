@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.domain.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -28,11 +28,11 @@ import kotlin.math.min
 @OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun applyCrop(
-    photoResult: PhotoResult,
+    photoResult: ImageAsset,
     cropRect: Rect,
     canvasSize: Size,
     isCircularCrop: Boolean,
-    onComplete: (PhotoResult) -> Unit
+    onComplete: (ImageAsset) -> Unit
 ) {
     try {
         val url = NSURL.URLWithString(photoResult.uri)

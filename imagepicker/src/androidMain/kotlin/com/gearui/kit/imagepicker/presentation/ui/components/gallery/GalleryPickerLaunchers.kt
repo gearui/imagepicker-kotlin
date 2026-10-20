@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import imagepicker.imagepicker.generated.resources.Res
 import imagepicker.imagepicker.generated.resources.gallery_selection_error
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.presentation.ui.components.gallery.GalleryFileProcessor.processSelectedFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun rememberSinglePickerLauncher(
     context: Context,
-    onPhotoSelected: (GalleryPhotoResult) -> Unit,
+    onPhotoSelected: (ImageAsset) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     compressionLevel: CompressionLevel? = null,
@@ -58,7 +58,7 @@ internal fun rememberSinglePickerLauncher(
 @Composable
 internal fun rememberMultiplePickerLauncher(
     context: Context,
-    onPhotosSelected: (List<GalleryPhotoResult>) -> Unit,
+    onPhotosSelected: (List<ImageAsset>) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     compressionLevel: CompressionLevel? = null,
@@ -70,7 +70,7 @@ internal fun rememberMultiplePickerLauncher(
         try {
             CoroutineScope(Dispatchers.Main).launch {
                 val semaphore = Semaphore(3)
-                val results = mutableListOf<GalleryPhotoResult>()
+                val results = mutableListOf<ImageAsset>()
                 val errors = mutableListOf<Exception>()
 
                 val deferredResults = uris.map { uri ->

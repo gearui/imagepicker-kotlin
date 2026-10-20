@@ -10,10 +10,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import com.gearui.kit.imagepicker.domain.config.CameraPermissionDialogConfig
+import com.gearui.kit.imagepicker.presentation.config.CameraPermissionDialogConfig
 import com.gearui.kit.imagepicker.domain.utils.openAppSettings
 
 
@@ -25,6 +26,7 @@ actual fun RequestCameraPermission(
     customPermissionHandler: (() -> Unit)?
 ) {
     val context = LocalContext.current
+    val currentOnResult by rememberUpdatedState(onResult)
     var showRationale by remember { mutableStateOf(false) }
     var permissionDeniedPermanently by remember { mutableStateOf(false) }
     var permissionDeniedCount by remember { mutableIntStateOf(0) }
@@ -34,7 +36,7 @@ actual fun RequestCameraPermission(
         contract = ActivityResultContracts.RequestPermission()
     ){ isGranted ->
         if (isGranted){
-            onResult(true)
+            currentOnResult(true)
         }else{
             permissionDeniedCount++
             when{
@@ -54,7 +56,7 @@ actual fun RequestCameraPermission(
         val currentPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
         when (currentPermission){
             PackageManager.PERMISSION_GRANTED -> {
-                onResult(true)
+                currentOnResult(true)
             }
             PackageManager.PERMISSION_DENIED -> {
                 permissionLauncher.launch(Manifest.permission.CAMERA)

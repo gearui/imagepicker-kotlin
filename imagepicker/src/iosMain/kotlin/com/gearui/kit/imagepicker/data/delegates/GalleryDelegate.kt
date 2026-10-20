@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.data.delegates
 import com.gearui.kit.imagepicker.data.processors.ImageProcessor
 import com.gearui.kit.imagepicker.domain.utils.ExifDataExtractor
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.UIKit.UIImage
@@ -21,7 +21,7 @@ import platform.darwin.NSObject
  */
 @OptIn(ExperimentalForeignApi::class)
 class GalleryDelegate(
-    private val onImagePicked: (GalleryPhotoResult) -> Unit,
+    private val onImagePicked: (ImageAsset) -> Unit,
     private val onDismiss: () -> Unit,
     private val compressionLevel: CompressionLevel? = null,
     private val includeExif: Boolean = false
@@ -72,7 +72,7 @@ class GalleryDelegate(
                         null
                     }
                     
-                    val galleryResult = GalleryPhotoResult(
+                    val galleryResult = ImageAsset(
                         uri = tempURL.absoluteString ?: "",
                         width = image.size.useContents { width.toInt() },
                         height = image.size.useContents { height.toInt() },

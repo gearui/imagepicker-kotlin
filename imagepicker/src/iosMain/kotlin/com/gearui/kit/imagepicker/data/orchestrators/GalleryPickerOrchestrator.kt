@@ -2,8 +2,8 @@ package com.gearui.kit.imagepicker.data.orchestrators
 
 import com.gearui.kit.imagepicker.presentation.presenters.GalleryPresenter
 import com.gearui.kit.imagepicker.domain.utils.ViewControllerProvider
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.SELECTION_LIMIT
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.SELECTION_LIMIT
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
 import com.gearui.kit.imagepicker.presentation.presenters.PHPickerPresenter
 
@@ -14,14 +14,14 @@ import com.gearui.kit.imagepicker.presentation.presenters.PHPickerPresenter
  */
 object GalleryPickerOrchestrator {
     fun launchGallery(
-        onPhotoSelected: (GalleryPhotoResult) -> Unit,
+        onPhotoSelected: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit,
         onDismiss: () -> Unit,
         allowMultiple: Boolean = false,
         selectionLimit: Long = SELECTION_LIMIT,
         compressionLevel: CompressionLevel? = null,
         includeExif: Boolean = false,
-        onPhotosSelected: ((List<GalleryPhotoResult>) -> Unit)? = null
+        onPhotosSelected: ((List<ImageAsset>) -> Unit)? = null
     ) {
         try {
             val rootViewController = ViewControllerProvider.getRootViewController()

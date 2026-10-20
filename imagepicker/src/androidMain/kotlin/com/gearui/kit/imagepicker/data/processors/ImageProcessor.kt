@@ -8,7 +8,7 @@ import androidx.core.content.ContextCompat
 import com.gearui.kit.imagepicker.data.camera.CameraController.CameraType
 import com.gearui.kit.imagepicker.domain.exceptions.ImageProcessingException
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.config.HighPerformanceConfig
 import com.gearui.kit.imagepicker.domain.utils.ExifDataExtractor
 import kotlinx.coroutines.CoroutineScope
@@ -36,7 +36,7 @@ class ImageProcessor(
         cameraType: CameraType,
         compressionLevel: CompressionLevel? = null,
         includeExif: Boolean = false,
-        onPhotoCaptured: (PhotoResult) -> Unit,
+        onPhotoCaptured: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit
     ) {
         CoroutineScope(Dispatchers.Default).launch {
@@ -81,7 +81,7 @@ class ImageProcessor(
                     }
 
                     val fileSizeInBytes = finalFile.length()
-                    val result = PhotoResult(
+                    val result = ImageAsset(
                         uri = fileManager.fileToUriString(finalFile),
                         width = processedBitmap.width,
                         height = processedBitmap.height,

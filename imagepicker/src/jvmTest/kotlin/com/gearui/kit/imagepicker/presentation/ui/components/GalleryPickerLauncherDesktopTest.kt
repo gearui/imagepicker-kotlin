@@ -1,6 +1,6 @@
 package com.gearui.kit.imagepicker.presentation.ui.components
 
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.MimeType
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -27,7 +27,7 @@ class GalleryPickerLauncherDesktopTest {
     @Test
     fun `test gallery photo result creation`() {
         // Esta es una prueba básica de estructura
-        val result = GalleryPhotoResult(
+        val result = ImageAsset(
             uri = "file:///test/image.jpg",
             width = 1920,
             height = 1080,

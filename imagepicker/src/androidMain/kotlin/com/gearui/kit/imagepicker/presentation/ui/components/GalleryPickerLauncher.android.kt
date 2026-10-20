@@ -3,8 +3,9 @@ package com.gearui.kit.imagepicker.presentation.ui.components
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import com.gearui.kit.imagepicker.domain.config.CameraCaptureConfig
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.presentation.config.CameraCaptureConfig
+import com.gearui.kit.imagepicker.domain.config.CropConfig
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.GalleryPickerConfig
 import com.gearui.kit.imagepicker.domain.models.MimeType
 import com.gearui.kit.imagepicker.presentation.ui.components.gallery.GalleryPickerLauncherContent
@@ -15,14 +16,14 @@ import org.jetbrains.compose.resources.stringResource
 @Suppress("ReturnCount","LongParameterList")
 @Composable
 actual fun GalleryPickerLauncher(
-    onPhotosSelected: (List<GalleryPhotoResult>) -> Unit,
+    onPhotosSelected: (List<ImageAsset>) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     allowMultiple: Boolean,
     mimeTypes: List<MimeType>,
     selectionLimit: Long,
     cameraCaptureConfig: CameraCaptureConfig?,
-    enableCrop: Boolean,
+    cropConfig: CropConfig,
     fileFilterDescription: String,
     includeExif: Boolean
 ) {
@@ -42,7 +43,7 @@ actual fun GalleryPickerLauncher(
         allowMultiple = allowMultiple,
         mimeTypes = mimeTypes.map { it.value },
         cameraCaptureConfig = cameraCaptureConfig,
-        enableCrop = enableCrop,
+        cropConfig = cropConfig,
         includeExif = includeExif
     )
     GalleryPickerLauncherContent(config)

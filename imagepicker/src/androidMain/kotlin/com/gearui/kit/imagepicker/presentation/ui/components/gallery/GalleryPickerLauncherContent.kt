@@ -5,26 +5,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import com.gearui.kit.imagepicker.domain.config.CropConfig
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
 import com.gearui.kit.imagepicker.domain.models.GalleryPickerConfig
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.presentation.ui.components.ImageCropView
 
-
 @Composable
- fun GalleryPickerLauncherContent(config: GalleryPickerConfig) {
+fun GalleryPickerLauncherContent(config: GalleryPickerConfig) {
+    val currentConfig by rememberUpdatedState(config)
     var shouldLaunch by remember { mutableStateOf(false) }
-    var selectedPhotoForConfirmation by remember { mutableStateOf<GalleryPhotoResult?>(null) }
+    var selectedPhotoForConfirmation by remember { mutableStateOf<ImageAsset?>(null) }
     var showCropView by remember { mutableStateOf(false) }
-    
-    val shouldShowCrop = config.cameraCaptureConfig?.cropConfig?.enabled == true || 
-                        (config.enableCrop && config.cameraCaptureConfig?.cropConfig?.enabled != false)
 
-    val effectiveGalleryConfig = remember(config.mimeTypes) { 
-        config.getEffectiveAndroidGalleryConfig() 
-    }
+    val shouldShowCrop = config.cropConfig.enabled
+    val effectiveGalleryConfig = remember(config.mimeTypes) { config.getEffectiveAndroidGalleryConfig() }
 
     val singlePickerLauncher = if (effectiveGalleryConfig.forceGalleryOnly) {
         rememberGalleryOnlyPickerLauncher(
@@ -63,7 +59,7 @@ import com.gearui.kit.imagepicker.presentation.ui.components.ImageCropView
             config.includeExif
         )
     }
-    
+
     val multiplePickerLauncher = if (effectiveGalleryConfig.forceGalleryOnly) {
         rememberGalleryOnlyMultiplePickerLauncher(
             config.context,
@@ -83,6 +79,8 @@ import com.gearui.kit.imagepicker.presentation.ui.components.ImageCropView
             config.includeExif
         )
     }
+    val currentSinglePickerLauncher by rememberUpdatedState(singlePickerLauncher)
+    val currentMultiplePickerLauncher by rememberUpdatedState(multiplePickerLauncher)
 
     LaunchedEffect(shouldLaunch) {
         if (shouldLaunch) {
@@ -91,20 +89,20 @@ import com.gearui.kit.imagepicker.presentation.ui.components.ImageCropView
                     "image/*"
                 } else {
                     when {
-                        config.mimeTypes.size > 1 -> "*/*"
-                        config.mimeTypes.any { it.contains("application/pdf", ignoreCase = true) } -> "*/*"
-                        else -> config.mimeTypes.firstOrNull() ?: "image/*"
+                        currentConfig.mimeTypes.size > 1 -> "*/*"
+                        currentConfig.mimeTypes.any { it.contains("application/pdf", ignoreCase = true) } -> "*/*"
+                        else -> currentConfig.mimeTypes.firstOrNull() ?: "image/*"
                     }
                 }
-                
-                if (config.allowMultiple) {
-                    multiplePickerLauncher.launch(mimeType)
+
+                if (currentConfig.allowMultiple) {
+                    currentMultiplePickerLauncher.launch(mimeType)
                 } else {
-                    singlePickerLauncher.launch(mimeType)
+                    currentSinglePickerLauncher.launch(mimeType)
                 }
                 shouldLaunch = false
             } catch (e: Exception) {
-                config.onError(e)
+                currentConfig.onError(e)
             }
         }
     }
@@ -116,35 +114,14 @@ import com.gearui.kit.imagepicker.presentation.ui.components.ImageCropView
     selectedPhotoForConfirmation?.let { photoResult ->
         if (showCropView) {
             ImageCropView(
-                photoResult = PhotoResult(
-                    uri = photoResult.uri,
-                    width = photoResult.width,
-                    height = photoResult.height,
-                    fileName = photoResult.fileName,
-                    fileSize = photoResult.fileSize,
-                    mimeType = photoResult.mimeType,
-                    exif = photoResult.exif
+                photoResult = photoResult,
+                cropConfig = if (config.cropConfig.enabled) config.cropConfig else CropConfig(
+                    enabled = true,
+                    circularCrop = true,
+                    squareCrop = true
                 ),
-                cropConfig = if (config.cameraCaptureConfig?.cropConfig?.enabled == true) {
-                    config.cameraCaptureConfig.cropConfig
-                } else {
-                    CropConfig(
-                        enabled = true,
-                        circularCrop = true,
-                        squareCrop = true
-                    )
-                },
-                onAccept = { croppedResult: PhotoResult ->
-                    val galleryResult = GalleryPhotoResult(
-                        uri = croppedResult.uri,
-                        width = croppedResult.width,
-                        height = croppedResult.height,
-                        fileName = croppedResult.fileName,
-                        fileSize = croppedResult.fileSize,
-                        mimeType = croppedResult.mimeType,
-                        exif = photoResult.exif
-                    )
-                    config.onPhotosSelected(listOf(galleryResult))
+                onAccept = { croppedResult ->
+                    config.onPhotosSelected(listOf(croppedResult))
                     selectedPhotoForConfirmation = null
                     showCropView = false
                 },
@@ -156,26 +133,9 @@ import com.gearui.kit.imagepicker.presentation.ui.components.ImageCropView
             )
         } else {
             config.cameraCaptureConfig?.permissionAndConfirmationConfig?.customConfirmationView?.invoke(
-                PhotoResult(
-                    uri = photoResult.uri,
-                    width = photoResult.width,
-                    height = photoResult.height,
-                    fileName = photoResult.fileName,
-                    fileSize = photoResult.fileSize,
-                    mimeType = photoResult.mimeType,
-                    exif = photoResult.exif
-                ),
+                photoResult,
                 { confirmedResult ->
-                    val galleryResult = GalleryPhotoResult(
-                        uri = confirmedResult.uri,
-                        width = confirmedResult.width,
-                        height = confirmedResult.height,
-                        fileName = confirmedResult.fileName,
-                        fileSize = confirmedResult.fileSize,
-                        mimeType = confirmedResult.mimeType,
-                        exif = photoResult.exif
-                    )
-                    config.onPhotosSelected(listOf(galleryResult))
+                    config.onPhotosSelected(listOf(confirmedResult))
                     selectedPhotoForConfirmation = null
                 },
                 {

@@ -5,32 +5,62 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import com.gearui.kit.imagepicker.gearui.GearImagePickerConfig
 import com.gearui.kit.imagepicker.gearui.GearImagePickerLauncher
 import com.gearui.kit.imagepicker.data.orchestrators.GalleryPickerOrchestrator
 import com.gearui.kit.imagepicker.data.orchestrators.PhotoCaptureOrchestrator
-import com.gearui.kit.imagepicker.domain.config.CameraCaptureConfig
-import com.gearui.kit.imagepicker.domain.config.CameraPermissionDialogConfig
+import com.gearui.kit.imagepicker.presentation.config.CameraCaptureConfig
+import com.gearui.kit.imagepicker.presentation.config.CameraPermissionDialogConfig
 import com.gearui.kit.imagepicker.domain.config.CropConfig
-import com.gearui.kit.imagepicker.domain.config.ImagePickerConfig
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerConfig
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
+import com.gearui.kit.imagepicker.domain.models.ImagePickerResult
+import imagepicker.imagepicker.generated.resources.Res
+import imagepicker.imagepicker.generated.resources.camera_permission_denied
+import imagepicker.imagepicker.generated.resources.camera_permission_denied_description
+import imagepicker.imagepicker.generated.resources.camera_permission_description
+import imagepicker.imagepicker.generated.resources.camera_permission_required
+import imagepicker.imagepicker.generated.resources.grant_permission
+import imagepicker.imagepicker.generated.resources.open_settings
+import org.jetbrains.compose.resources.stringResource
 
 
 @Suppress("FunctionNaming","TrailingWhitespace")
 @Composable
 actual fun ImagePickerLauncher(
-    config: ImagePickerConfig
+    config: ImagePickerConfig,
+    visible: Boolean
 ) {
-    var showDialog by remember { mutableStateOf(!config.directCameraLaunch) }
-    var askCameraPermission by remember { mutableStateOf(config.directCameraLaunch) }
+    if (!visible) {
+        return
+    }
+
+    var showDialog by remember { mutableStateOf(false) }
+    var askCameraPermission by remember { mutableStateOf(false) }
     var launchCamera by remember { mutableStateOf(false) }
     var launchGallery by remember { mutableStateOf(false) }
     
-    var selectedPhotoForCrop by remember { mutableStateOf<PhotoResult?>(null) }
+    var selectedPhotoForCrop by remember { mutableStateOf<ImageAsset?>(null) }
     var showCropView by remember { mutableStateOf(false) }
+
+    LaunchedEffect(visible, config.directCameraLaunch, config.directGalleryLaunch) {
+        if (visible) {
+            showDialog = !config.directCameraLaunch && !config.directGalleryLaunch
+            askCameraPermission = config.directCameraLaunch
+            launchCamera = false
+            launchGallery = config.directGalleryLaunch
+        } else {
+            showDialog = false
+            askCameraPermission = false
+            launchCamera = false
+            launchGallery = false
+            showCropView = false
+            selectedPhotoForCrop = null
+        }
+    }
     
     val onCameraPermissionGranted = {
         askCameraPermission = false
@@ -95,12 +125,12 @@ actual fun ImagePickerLauncher(
     if (launchCamera) {
         launchCameraInternal(
             onPhotoCaptured = { result ->
-                val shouldShowCrop = config.cameraCaptureConfig.cropConfig.enabled || config.enableCrop
+                val shouldShowCrop = config.cropConfig.enabled
                 if (shouldShowCrop) {
                     selectedPhotoForCrop = result
                     showCropView = true
                 } else {
-                    config.onPhotoCaptured(result)
+                    config.onResult(ImagePickerResult.Single(result))
                 }
             },
             onError = config.onError,
@@ -114,21 +144,16 @@ actual fun ImagePickerLauncher(
     if (launchGallery) {
         launchGalleryInternal(
             onPhotoSelected = { result ->
-                val photoResult = PhotoResult(
-                    uri = result.uri,
-                    width = result.width,
-                    height = result.height,
-                    fileName = result.fileName,
-                    fileSize = result.fileSize
-                )
-                
-                val shouldShowCrop = config.cameraCaptureConfig.cropConfig.enabled || config.enableCrop
+                val shouldShowCrop = config.cropConfig.enabled
                 if (shouldShowCrop) {
-                    selectedPhotoForCrop = photoResult
+                    selectedPhotoForCrop = result
                     showCropView = true
                 } else {
-                    config.onPhotosSelected?.invoke(listOf(result))
-                    config.onPhotoCaptured(photoResult)
+                    if (config.galleryConfig.allowMultiple) {
+                        config.onResult(ImagePickerResult.Multiple(listOf(result)))
+                    } else {
+                        config.onResult(ImagePickerResult.Single(result))
+                    }
                 }
             },
             onError = config.onError,
@@ -141,19 +166,9 @@ actual fun ImagePickerLauncher(
     if (showCropView && selectedPhotoForCrop != null) {        
         ImageCropView(
             photoResult = selectedPhotoForCrop!!,
-            cropConfig = if (config.cameraCaptureConfig.cropConfig.enabled) {
-                config.cameraCaptureConfig.cropConfig
-            } else if (config.enableCrop) {
-                CropConfig(
-                    enabled = true,
-                    circularCrop = true, 
-                    squareCrop = true
-                )
-            } else {
-                config.cameraCaptureConfig.cropConfig
-            },
+            cropConfig = if (config.cropConfig.enabled) config.cropConfig else CropConfig(enabled = false),
             onAccept = { croppedResult ->
-                config.onPhotoCaptured(croppedResult)
+                config.onResult(ImagePickerResult.Single(croppedResult))
                 showCropView = false
                 selectedPhotoForCrop = null
             },
@@ -175,12 +190,12 @@ private fun handleCameraPermission(
     onDenied: () -> Unit
 ) {
     val dialogConfig = CameraPermissionDialogConfig(
-        titleDialogConfig = "Camera permission required",
-        descriptionDialogConfig = "Camera permission is required to capture photos. Please grant it in settings",
-        btnDialogConfig = "Grant permission",
-        titleDialogDenied = "Camera permission denied",
-        descriptionDialogDenied = "Camera permission is required to capture photos. Please grant the permissions",
-        btnDialogDenied = "Open settings",
+        titleDialogConfig = stringResource(Res.string.camera_permission_required),
+        descriptionDialogConfig = stringResource(Res.string.camera_permission_description),
+        btnDialogConfig = stringResource(Res.string.grant_permission),
+        titleDialogDenied = stringResource(Res.string.camera_permission_denied),
+        descriptionDialogDenied = stringResource(Res.string.camera_permission_denied_description),
+        btnDialogDenied = stringResource(Res.string.open_settings),
         customDeniedDialog = cameraCaptureConfig.permissionAndConfirmationConfig.customDeniedDialog,
         customSettingsDialog = cameraCaptureConfig.permissionAndConfirmationConfig.customSettingsDialog,
         cancelButtonText = cameraCaptureConfig.permissionAndConfirmationConfig.cancelButtonTextIOS,
@@ -196,26 +211,30 @@ private fun handleCameraPermission(
 
 @Composable
 private fun launchCameraInternal(
-    onPhotoCaptured: (PhotoResult) -> Unit,
+    onPhotoCaptured: (ImageAsset) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     onFinish: () -> Unit,
     compressionLevel: CompressionLevel? = null,
     includeExif: Boolean = false
 ) {
+    val currentOnPhotoCaptured by rememberUpdatedState(onPhotoCaptured)
+    val currentOnError by rememberUpdatedState(onError)
+    val currentOnDismiss by rememberUpdatedState(onDismiss)
+    val currentOnFinish by rememberUpdatedState(onFinish)
     LaunchedEffect(Unit) {
         PhotoCaptureOrchestrator.launchCamera(
             onPhotoCaptured = {
-                onPhotoCaptured(it)
-                onFinish()
+                currentOnPhotoCaptured(it)
+                currentOnFinish()
             },
             onError = {
-                onError(it)
-                onFinish()
+                currentOnError(it)
+                currentOnFinish()
             },
             onDismiss = {
-                onDismiss()
-                onFinish()
+                currentOnDismiss()
+                currentOnFinish()
             },
             compressionLevel = compressionLevel,
             includeExif = includeExif
@@ -225,23 +244,30 @@ private fun launchCameraInternal(
 
 @Composable
 private fun launchGalleryInternal(
-    onPhotoSelected: (GalleryPhotoResult) -> Unit,
+    onPhotoSelected: (ImageAsset) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     onFinish: () -> Unit,
     compressionLevel: CompressionLevel? = null
 ) {
+    val currentOnPhotoSelected by rememberUpdatedState(onPhotoSelected)
+    val currentOnError by rememberUpdatedState(onError)
+    val currentOnDismiss by rememberUpdatedState(onDismiss)
+    val currentOnFinish by rememberUpdatedState(onFinish)
     LaunchedEffect(Unit) {
         GalleryPickerOrchestrator.launchGallery(
             onPhotoSelected = {
-                onPhotoSelected(it)
-                onFinish()
+                currentOnPhotoSelected(it)
+                currentOnFinish()
             },
             onError = {
-                onError(it)
-                onFinish()
+                currentOnError(it)
+                currentOnFinish()
             },
-            onDismiss = onDismiss,
+            onDismiss = {
+                currentOnDismiss()
+                currentOnFinish()
+            },
             compressionLevel = compressionLevel
         )
     }

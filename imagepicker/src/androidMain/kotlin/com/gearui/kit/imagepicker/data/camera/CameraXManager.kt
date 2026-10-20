@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.data.camera
 import androidx.camera.view.PreviewView
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
 import com.gearui.kit.imagepicker.domain.models.CapturePhotoPreference
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 
 /**
  * High-level manager for camera operations, providing an interface to start, stop, and control the camera.
@@ -20,7 +20,7 @@ class CameraXManager(
         cameraController.startCamera(previewView,preference)
     }
     fun takePicture(
-        onPhotoResult: (PhotoResult) -> Unit,
+        onPhotoResult: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit,
         compressionLevel: CompressionLevel? = null,
         includeExif: Boolean = false

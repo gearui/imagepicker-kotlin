@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.MimeType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,7 +25,7 @@ import javax.swing.JFileChooser
  */
 @Composable
 fun JvmFilePicker(
-    onPhotosSelected: (List<GalleryPhotoResult>) -> Unit,
+    onPhotosSelected: (List<ImageAsset>) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     allowMultiple: Boolean = false,
@@ -41,7 +41,7 @@ fun JvmFilePicker(
     LaunchedEffect(launchKey) {
         withContext(Dispatchers.IO) {
             try {
-                val completableResult = kotlinx.coroutines.CompletableDeferred<List<GalleryPhotoResult>>()
+                val completableResult = kotlinx.coroutines.CompletableDeferred<List<ImageAsset>>()
                 javax.swing.SwingUtilities.invokeLater {
                     try {
                         val results = if (allowMultiple) {
@@ -76,14 +76,14 @@ fun JvmFilePicker(
 }
 
 
-private fun selectSingleImage(mimeTypes: List<MimeType>, filterDescription: String): GalleryPhotoResult? {
+private fun selectSingleImage(mimeTypes: List<MimeType>, filterDescription: String): ImageAsset? {
     return try {
         val fileChooser = createFileChooser(mimeTypes, "Select Image", false, filterDescription)
         val result = fileChooser.showOpenDialog(null)
         
         if (result == JFileChooser.APPROVE_OPTION) {
             val selectedFile = fileChooser.selectedFile
-            createGalleryPhotoResult(selectedFile)
+            createImageAssetFromFile(selectedFile)
         } else {
             null
         }
@@ -93,7 +93,7 @@ private fun selectSingleImage(mimeTypes: List<MimeType>, filterDescription: Stri
 }
 
 
-private fun selectMultipleImages(mimeTypes: List<MimeType>, selectionLimit: Long, filterDescription: String): List<GalleryPhotoResult> {
+private fun selectMultipleImages(mimeTypes: List<MimeType>, selectionLimit: Long, filterDescription: String): List<ImageAsset> {
     return try {
         val fileChooser = createFileChooser(mimeTypes, "Select Images", true, filterDescription)
         val result = fileChooser.showOpenDialog(null)
@@ -101,7 +101,7 @@ private fun selectMultipleImages(mimeTypes: List<MimeType>, selectionLimit: Long
         if (result == JFileChooser.APPROVE_OPTION) {
             val selectedFiles = fileChooser.selectedFiles.take(selectionLimit.toInt())
             selectedFiles.mapNotNull { file ->
-                createGalleryPhotoResult(file)
+                createImageAssetFromFile(file)
             }
         } else {
             emptyList()

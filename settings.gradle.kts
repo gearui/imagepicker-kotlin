@@ -29,3 +29,13 @@ include(":imagepicker")
 include(":gearui-kit-local")
 include(":sample")
 project(":gearui-kit-local").projectDir = file("../gearui-kit/gearui-kit")
+
+// Include GearUI-Kit as a composite build so that "com.gearui:gearui-kit" module dependency
+// is resolved to the local source. When imagepicker-kotlin is itself included as a composite
+// build (e.g. from live-chat), Gradle deduplicates by canonical path and the outer build's
+// substitution rule takes precedence, preventing klib duplication.
+includeBuild("../gearui-kit") {
+    dependencySubstitution {
+        substitute(module("com.gearui:gearui-kit")).using(project(":gearui-kit"))
+    }
+}

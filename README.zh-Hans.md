@@ -1,6 +1,6 @@
 # imagepicker
 
-`imagepicker` 是一个为 GearUI + KuiklyUI 项目构建的图片选择器/相机库。
+`imagepicker` 是用于 GearUI 应用的 Kotlin Multiplatform 图片选择器/相机库。
 
 ## 依赖引入
 
@@ -14,69 +14,77 @@ implementation("com.gearui:imagepicker:<version>")
 - `sample`：GearUI 示例应用（Android + iOS）
 - `gearui-kit-local`：用于示例开发的 GearUI kit 本地链接
 
-## 平台支持状态
-
-### iOS
-
-- `从相册选择`：已支持
-- `拍照`：真机已支持
-- iOS 模拟器的相机回调在不同运行时版本中不稳定，请使用真机验证相机流程
-
-### Android
-
-- `从相册选择`：已支持，通过 `ActivityResultContracts.GetContent` 实现
-- `拍照`：已支持，通过 `ActivityResultContracts.TakePicture` + `FileProvider` 实现
-- 运行时相机权限由 Bridge 处理（`Manifest.permission.CAMERA`）
-
-## 运行示例
-
-### Android
-
-```bash
-./gradlew :sample:assembleDebug
-./gradlew :sample:installDebug
-```
-
-### iOS
-
-```bash
-cd sample/iosApp
-xcodebuild -workspace GearUISample.xcworkspace -scheme iosApp -configuration Debug
-```
-
-或在 Xcode 中打开 `sample/iosApp/GearUISample.xcworkspace`，运行 `iosApp` scheme。
-
-## Android 集成说明
-
-`sample` 展示了原生 Bridge 模式：
-
-- 在 `MainActivity.onCreate` 中调用 `NativeImagePickerBridge.bind(activity)`
-- 在 `MainActivity.onDestroy` 中调用 `NativeImagePickerBridge.unbind(activity)`
-- 公共代码中的 Bridge API：
+## 快速开始（仅推荐 state API）
 
 ```kotlin
-NativeImagePickerBridge.open(
-    source = ImagePickerSource.CAMERA, // 或 GALLERY
-    onPicked = { uri -> /* 处理图片 */ },
-    onError = { message -> /* 显示错误 */ },
-    onCancel = { /* 处理取消 */ }
+import com.gearui.kit.imagepicker.presentation.api.ImagePicker
+import com.gearui.kit.imagepicker.presentation.api.ImagePickerSimpleConfig
+import com.gearui.kit.imagepicker.presentation.api.ImagePickerSource
+import com.gearui.kit.imagepicker.presentation.api.rememberImagePickerState
+
+val pickerState = rememberImagePickerState()
+
+Button(onClick = { pickerState.show() }) { Text("选择图片") }
+
+ImagePicker(
+    state = pickerState,
+    onResult = { result -> /* 处理 Single/Multiple */ },
+    onError = { e -> /* 处理异常 */ },
+    config = ImagePickerSimpleConfig(
+        source = ImagePickerSource.CameraOrGallery,
+        multiple = false,
+        cropEnabled = true
+    )
 )
 ```
 
-Manifest 配置要求（示例中已配置）：
+仅支持 state 驱动 API。
 
-- `android.permission.CAMERA`
-- `androidx.core.content.FileProvider` 配合 `@xml/file_paths`
+单图 launcher：
 
-## iOS 集成说明
+```kotlin
+import com.gearui.kit.imagepicker.presentation.api.ImagePickerSource
+import com.gearui.kit.imagepicker.presentation.api.rememberSingleImagePickerLauncher
 
-`sample` 使用 Kotlin/Native 调用 UIKit 选择器，并在调用 `presentViewController` 之前将展示操作调度到主线程。
+val launchSinglePicker = rememberSingleImagePickerLauncher(
+    source = ImagePickerSource.GalleryOnly,
+    onPicked = { asset -> /* 上传 */ },
+    onError = { e -> /* 处理异常 */ }
+)
 
-Info.plist 配置要求（示例中已配置）：
+Button(onClick = launchSinglePicker) { Text("选择图片") }
+```
 
-- `NSCameraUsageDescription`
-- `NSPhotoLibraryUsageDescription`
-- `NSPhotoLibraryAddUsageDescription`
+## 图片字节读取 API
+
+```kotlin
+import com.gearui.kit.imagepicker.domain.extensions.readBytes
+import com.gearui.kit.imagepicker.domain.models.BytesPolicy
+
+val original = asset.readBytes(BytesPolicy.ORIGINAL)
+val optimized = asset.readBytes(BytesPolicy.OPTIMIZED)
+```
+
+- `readBytes()`：异步 + 策略化读取。
+- `loadBytes()`：兼容包装（同步，内部走 optimized 策略）。
+
+## 平台能力矩阵
+
+| 平台 | 相册 | 相机 | 裁剪 |
+|---|---|---|---|
+| Android | ✅ | ✅ | ✅ |
+| iOS（真机） | ✅ | ✅ | ✅ |
+| iOS 模拟器 | ✅ | ⚠️ 依赖运行时/模拟器 | ✅ |
+| JVM Desktop | ✅（文件选择） | ❌ | ❌ |
+| JS（浏览器） | ✅ | ✅（依赖浏览器权限和设备） | ✅ |
+| WASM | ❌ | ❌ | ❌ |
+
+不支持能力时会返回 `UnsupportedPlatformException`，并带 `ImagePickerErrorCode`：
+
+- `PLATFORM_NOT_SUPPORTED`
+- `CAMERA_NOT_SUPPORTED`
+- `GALLERY_NOT_SUPPORTED`
+- `CROP_NOT_SUPPORTED`
 
 ## 开发
 

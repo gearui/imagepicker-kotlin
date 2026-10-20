@@ -1,8 +1,8 @@
 package com.gearui.kit.imagepicker.presentation.presenters
 
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.SELECTION_LIMIT
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.SELECTION_LIMIT
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.presentation.ui.components.showPermissionDeniedDialog
 import platform.UIKit.UIViewController
 
@@ -14,13 +14,13 @@ import platform.UIKit.UIViewController
 object PHPickerPresenter {
     fun presentGallery(
         viewController: UIViewController,
-        onPhotoSelected: (GalleryPhotoResult) -> Unit,
+        onPhotoSelected: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit,
         onDismiss: () -> Unit,
         selectionLimit: Long,
         compressionLevel: CompressionLevel? = null,
         includeExif: Boolean,
-        onPhotosSelected: ((List<GalleryPhotoResult>) -> Unit)? = null
+        onPhotosSelected: ((List<ImageAsset>) -> Unit)? = null
     ) {
         require(selectionLimit <= SELECTION_LIMIT) {"Selection limit cannot exceed $SELECTION_LIMIT"}
         

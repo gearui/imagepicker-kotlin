@@ -7,7 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.gearui.kit.imagepicker.data.camera.CameraController.CameraType
 import com.gearui.kit.imagepicker.data.managers.FileManager
 import com.gearui.kit.imagepicker.domain.exceptions.ImageProcessingException
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -64,7 +64,7 @@ class ImageProcessorTest {
         val correctedFile = File(context.cacheDir, "corrected_test_image.jpg")
         val expectedUri = "file://${correctedFile.absolutePath}"
         val latch = CountDownLatch(1)
-        var capturedResult: PhotoResult? = null
+        var capturedResult: ImageAsset? = null
         var capturedError: Exception? = null
 
         `when`(orientationCorrector.correctImageOrientation(testImageFile, CameraType.FRONT))
@@ -112,7 +112,7 @@ class ImageProcessorTest {
         val correctedFile = File(context.cacheDir, "corrected_back_test_image.jpg")
         val expectedUri = "file://${correctedFile.absolutePath}"
         val latch = CountDownLatch(1)
-        var capturedResult: PhotoResult? = null
+        var capturedResult: ImageAsset? = null
         var capturedError: Exception? = null
 
         `when`(orientationCorrector.correctImageOrientation(testImageFile, CameraType.BACK))
@@ -156,7 +156,7 @@ class ImageProcessorTest {
         emptyFile.createNewFile() // Empty file that can't be decoded as bitmap
         
         val latch = CountDownLatch(1)
-        var capturedResult: PhotoResult? = null
+        var capturedResult: ImageAsset? = null
         var capturedError: Exception? = null
 
         `when`(orientationCorrector.correctImageOrientation(emptyFile, CameraType.FRONT))
@@ -195,7 +195,7 @@ class ImageProcessorTest {
     fun testProcessImageWithOrientationCorrectorException() = runTest {
         // Arrange
         val latch = CountDownLatch(1)
-        var capturedResult: PhotoResult? = null
+        var capturedResult: ImageAsset? = null
         var capturedError: Exception? = null
         val originalException = RuntimeException("Orientation correction failed")
 
@@ -236,7 +236,7 @@ class ImageProcessorTest {
         // Arrange
         val correctedFile = File(context.cacheDir, "corrected_fm_test_image.jpg")
         val latch = CountDownLatch(1)
-        var capturedResult: PhotoResult? = null
+        var capturedResult: ImageAsset? = null
         var capturedError: Exception? = null
         val originalException = RuntimeException("File manager failed")
 
@@ -281,7 +281,7 @@ class ImageProcessorTest {
         // Arrange
         val nonExistentFile = File(context.cacheDir, "non_existent.jpg")
         val latch = CountDownLatch(1)
-        var capturedResult: PhotoResult? = null
+        var capturedResult: ImageAsset? = null
         var capturedError: Exception? = null
 
         `when`(orientationCorrector.correctImageOrientation(nonExistentFile, CameraType.FRONT))
@@ -314,7 +314,7 @@ class ImageProcessorTest {
     }
 
     @Test
-    fun testProcessImageCreatesPhotoResultWithCorrectDimensions() = runTest {
+    fun testProcessImageCreatesImageAssetWithCorrectDimensions() = runTest {
         // Arrange - Create a bitmap with specific dimensions
         val specificWidth = 200
         val specificHeight = 150
@@ -328,7 +328,7 @@ class ImageProcessorTest {
         val correctedFile = File(context.cacheDir, "corrected_specific_image.jpg")
         val expectedUri = "content://test/uri"
         val latch = CountDownLatch(1)
-        var capturedResult: PhotoResult? = null
+        var capturedResult: ImageAsset? = null
 
         `when`(orientationCorrector.correctImageOrientation(specificFile, CameraType.FRONT))
             .thenReturn(correctedFile)
@@ -369,7 +369,7 @@ class ImageProcessorTest {
             val correctedFile = File(context.cacheDir, "corrected_${cameraType.name.lowercase()}_image.jpg")
             val expectedUri = "file://${correctedFile.absolutePath}"
             val latch = CountDownLatch(1)
-            var capturedResult: PhotoResult? = null
+            var capturedResult: ImageAsset? = null
 
             `when`(orientationCorrector.correctImageOrientation(testImageFile, cameraType))
                 .thenReturn(correctedFile)

@@ -18,25 +18,24 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Hd
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sd
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import coil3.compose.AsyncImage
 import com.gearui.components.button.Button
 import com.gearui.components.button.ButtonShape
@@ -51,19 +50,19 @@ import imagepicker.imagepicker.generated.resources.image_confirmation_title
 import imagepicker.imagepicker.generated.resources.preview_image_description
 import imagepicker.imagepicker.generated.resources.retry_button
 import imagepicker.imagepicker.generated.resources.sd_quality_description
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants
-import com.gearui.kit.imagepicker.domain.config.UiConfig
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants
+import com.gearui.kit.imagepicker.presentation.config.UiConfig
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import org.jetbrains.compose.resources.stringResource
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Suppress("EndOfSentenceFormat","LongMethod","FunctionNaming")
 @Composable
 fun ImageConfirmationViewWithCustomButtons(
-    result: PhotoResult,
-    onConfirm: (PhotoResult) -> Unit,
+    result: ImageAsset,
+    onConfirm: (ImageAsset) -> Unit,
     onRetry: () -> Unit,
-    customConfirmationView: (@Composable (PhotoResult, (PhotoResult) -> Unit, () -> Unit) -> Unit)? = null,
+    customConfirmationView: (@Composable (ImageAsset, (ImageAsset) -> Unit, () -> Unit) -> Unit)? = null,
     uiConfig: UiConfig = UiConfig()
 ) {
     if (customConfirmationView != null) {
@@ -97,12 +96,11 @@ fun ImageConfirmationViewWithCustomButtons(
                 uiConfig = uiConfig
             )
         } else {
-            Card(
+            Box(
                 modifier = Modifier
-                    .widthIn(max = ImagePickerUiConstants.ConfirmationCardMaxWidth),
-                shape = RoundedCornerShape(ImagePickerUiConstants.ConfirmationCardCornerRadius),
-                elevation = ImagePickerUiConstants.DefaultCardElevation,
-                backgroundColor = resolvedButtonColor
+                    .widthIn(max = ImagePickerUiConstants.ConfirmationCardMaxWidth)
+                    .clip(RoundedCornerShape(ImagePickerUiConstants.ConfirmationCardCornerRadius))
+                    .background(resolvedButtonColor)
             ) {
                 Column(modifier = Modifier
                     .fillMaxWidth(),
@@ -126,17 +124,17 @@ fun ImageConfirmationViewWithCustomButtons(
                            .padding(ImagePickerUiConstants.ConfirmationCardPadding),
                            verticalArrangement = Arrangement
                                .spacedBy(ImagePickerUiConstants.ConfirmationCardButtonSpacing)) {
-                           IconButton(
-                               onClick = {},
+                           Box(
                                modifier = Modifier
                                    .background(Color.Black.copy(alpha = 0.5f), shape = CircleShape)
-                                   .size(resolvedButtonSize)
+                                   .size(resolvedButtonSize),
+                               contentAlignment = Alignment.Center
                            ) {
-                               Icon(
-                                   imageVector = if (isHD) Icons.Default.Hd else Icons.Default.Sd,
+                               androidx.compose.foundation.Image(
+                                   painter = rememberVectorPainter(if (isHD) Icons.Default.Hd else Icons.Default.Sd),
                                    contentDescription = if (isHD) stringResource(Res.string.hd_quality_description)
                                    else stringResource(Res.string.sd_quality_description),
-                                   tint = resolvedIconColor
+                                   colorFilter = ColorFilter.tint(resolvedIconColor)
                                )
                            }
                        }
@@ -150,12 +148,14 @@ fun ImageConfirmationViewWithCustomButtons(
                                 vertical = ImagePickerUiConstants.ConfirmationCardPadding),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
+                        BasicText(
                             text = stringResource(Res.string.image_confirmation_title),
-                            color = ImagePickerUiConstants.ConfirmationCardTitleColor,
-                            fontSize = ImagePickerUiConstants.ConfirmationCardTitleFontSize,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
+                            style = TextStyle(
+                                color = ImagePickerUiConstants.ConfirmationCardTitleColor,
+                                fontSize = ImagePickerUiConstants.ConfirmationCardTitleFontSize,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            ),
                             modifier = Modifier.fillMaxWidth()
                         )
 

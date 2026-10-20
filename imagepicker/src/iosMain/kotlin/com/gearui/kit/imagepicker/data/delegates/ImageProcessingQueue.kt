@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.data.delegates
 import com.gearui.kit.imagepicker.data.processors.ImageProcessor
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
 import com.gearui.kit.imagepicker.domain.models.ExifData
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.MimeType
 import com.gearui.kit.imagepicker.domain.utils.ExifDataExtractor
 import kotlinx.cinterop.BetaInteropApi
@@ -26,11 +26,11 @@ internal class ImageProcessingQueue(
     private val pickerResults: List<PHPickerResult>,
     private val compressionLevel: CompressionLevel?,
     private val includeExif: Boolean,
-    private val onComplete: (List<GalleryPhotoResult>) -> Unit,
+    private val onComplete: (List<ImageAsset>) -> Unit,
     private val onError: (Exception) -> Unit
 ) {
     
-    private val results = mutableListOf<GalleryPhotoResult>()
+    private val results = mutableListOf<ImageAsset>()
     private var processedCount = 0
     private var successCount = 0
     private var currentIndex = 0
@@ -84,7 +84,7 @@ internal class ImageProcessingQueue(
     
     private fun processImageDataInBackground(imageData: NSData, pickerResult: PHPickerResult, index: Int) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT.toLong(), 0u)) {
-            var galleryResult: GalleryPhotoResult? = null
+            var galleryResult: ImageAsset? = null
             autoreleasepool {
                 try {
                     galleryResult = processImageFromData(imageData, pickerResult)
@@ -112,7 +112,7 @@ internal class ImageProcessingQueue(
         }
     }
 
-    private fun processImageFromData(imageData: NSData, pickerResult: PHPickerResult): GalleryPhotoResult? {
+    private fun processImageFromData(imageData: NSData, pickerResult: PHPickerResult): ImageAsset? {
         val uiImage = UIImage.imageWithData(imageData)
             ?: throw Exception("Failed to create UIImage from ${imageData.length} bytes of data")
         
@@ -135,7 +135,7 @@ internal class ImageProcessingQueue(
             null
         }
         
-        return GalleryPhotoResult(
+        return ImageAsset(
             uri = tempURL.absoluteString ?: "",
             width = finalWidth,
             height = finalHeight,
@@ -164,7 +164,7 @@ internal class ImageProcessingQueue(
             null
         }
     }
-    private fun createFallbackResult(imageData: NSData, pickerResult: PHPickerResult, index: Int): GalleryPhotoResult? {
+    private fun createFallbackResult(imageData: NSData, pickerResult: PHPickerResult, index: Int): ImageAsset? {
         return try {
             println("ImageProcessingQueue: Attempting fallback processing for image $index")
             
@@ -190,7 +190,7 @@ internal class ImageProcessingQueue(
                             null
                         }
                         
-                        GalleryPhotoResult(
+                        ImageAsset(
                             uri = tempURL.absoluteString ?: "",
                             width = phAsset.pixelWidth.toInt(),
                             height = phAsset.pixelHeight.toInt(),

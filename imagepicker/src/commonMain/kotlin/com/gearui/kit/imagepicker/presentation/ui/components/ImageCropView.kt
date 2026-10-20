@@ -17,15 +17,15 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import com.gearui.kit.imagepicker.domain.config.CropConfig
 import com.gearui.kit.imagepicker.domain.models.CropHandle
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.utils.applyCrop
 import com.gearui.kit.imagepicker.domain.utils.applyCropAspectRatio
 
 @Composable
 fun ImageCropView(
-    photoResult: PhotoResult,
+    photoResult: ImageAsset,
     cropConfig: CropConfig,
-    onAccept: (PhotoResult) -> Unit,
+    onAccept: (ImageAsset) -> Unit,
     onCancel: () -> Unit
 ) {
     var cropRect by remember { mutableStateOf(Rect.Zero) }

@@ -8,10 +8,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.gearui.kit.imagepicker.data.camera.CameraController
 import com.gearui.kit.imagepicker.data.camera.CameraXManager
-import com.gearui.kit.imagepicker.domain.config.ImagePickerUiConstants.DELAY_TO_TAKE_PHOTO
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerUiConstants.DELAY_TO_TAKE_PHOTO
 import com.gearui.kit.imagepicker.domain.models.CapturePhotoPreference
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -81,7 +81,7 @@ class CameraCaptureStateHolder(
     }
 
     fun capturePhoto(
-        onPhotoResult: (PhotoResult) -> Unit,
+        onPhotoResult: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit,
         compressionLevel: CompressionLevel? = null,
         includeExif: Boolean = false

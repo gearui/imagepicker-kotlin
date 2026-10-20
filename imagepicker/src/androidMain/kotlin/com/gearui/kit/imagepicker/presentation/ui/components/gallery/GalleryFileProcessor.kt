@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.presentation.ui.components.gallery
 import android.content.Context
 import android.net.Uri
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.utils.DefaultLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,7 +21,7 @@ internal object GalleryFileProcessor {
         uri: Uri,
         compressionLevel: CompressionLevel? = null,
         includeExif: Boolean = false
-    ): GalleryPhotoResult? {
+    ): ImageAsset? {
         return withContext(Dispatchers.IO) {
             try {
                 val mimeType = GalleryFileUtils.getFileMimeType(context, uri)
@@ -58,7 +58,7 @@ internal object GalleryFileProcessor {
         uri: Uri,
         fileName: String?,
         mimeType: String
-    ): GalleryPhotoResult? {
+    ): ImageAsset? {
         val inputStream = context.contentResolver.openInputStream(uri)
         val fileBytes = inputStream?.readBytes()
         inputStream?.close()
@@ -66,7 +66,7 @@ internal object GalleryFileProcessor {
         if (fileBytes != null) {
             val fileSizeInBytes = fileBytes.size.toLong()
             logDebug(" PDF file selected - File size: ${fileSizeInBytes} bytes (${fileSizeInBytes / 1024}KB), MIME: $mimeType")
-            return GalleryPhotoResult(
+            return ImageAsset(
                 uri = uri.toString(),
                 width = null,
                 height = null,
@@ -87,14 +87,14 @@ internal object GalleryFileProcessor {
         uri: Uri,
         fileName: String?,
         mimeType: String?
-    ): GalleryPhotoResult? {
+    ): ImageAsset? {
         val inputStream = context.contentResolver.openInputStream(uri)
         val fileBytes = inputStream?.readBytes()
         inputStream?.close()
         
         if (fileBytes != null) {
             val fileSizeInBytes = fileBytes.size.toLong()
-            return GalleryPhotoResult(
+            return ImageAsset(
                 uri = uri.toString(),
                 width = null,
                 height = null,

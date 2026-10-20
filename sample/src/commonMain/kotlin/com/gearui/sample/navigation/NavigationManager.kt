@@ -26,7 +26,6 @@ import com.gearui.sample.examples.treeselect.TreeSelectExample
 import com.gearui.sample.examples.navbar.NavbarExample
 import com.gearui.sample.examples.tab.TabExample
 import com.gearui.sample.examples.sidebar.SidebarExample
-import com.gearui.sample.examples.tabbar.TabBarExample
 import com.gearui.sample.examples.cell.CellExample
 import com.gearui.sample.examples.drawer.DrawerExample
 import com.gearui.sample.examples.steps.StepsExample
@@ -116,7 +115,6 @@ object NavigationManager {
             "navbar" -> NavbarExample(component, onBack)
             "tab" -> TabExample(component, onBack)
             "sidebar" -> SidebarExample(component, onBack)
-            "tabbar" -> TabBarExample(component, onBack)
             "drawer" -> DrawerExample(component, onBack)
             "steps" -> StepsExample(component, onBack)
             "breadcrumb" -> BreadcrumbExample(component, onBack)

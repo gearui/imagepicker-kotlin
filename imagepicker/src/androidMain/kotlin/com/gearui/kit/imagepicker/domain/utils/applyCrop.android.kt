@@ -5,15 +5,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalContext
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 
 @Composable
 actual fun applyCrop(
-    photoResult: PhotoResult,
+    photoResult: ImageAsset,
     cropRect: Rect,
     canvasSize: Size,
     isCircularCrop: Boolean,
-    onComplete: (PhotoResult) -> Unit
+    onComplete: (ImageAsset) -> Unit
 ) {
     val context = LocalContext.current
     

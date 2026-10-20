@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.data.delegates
 import com.gearui.kit.imagepicker.data.processors.ImageProcessor
 import com.gearui.kit.imagepicker.domain.exceptions.PhotoCaptureException
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.utils.ExifDataExtractor
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -22,7 +22,7 @@ import platform.darwin.NSObject
  */
 @OptIn(ExperimentalForeignApi::class)
 class CameraDelegate(
-    private val onPhotoCaptured: (PhotoResult) -> Unit,
+    private val onPhotoCaptured: (ImageAsset) -> Unit,
     private val onError: (Exception) -> Unit,
     private val onDismiss: () -> Unit,
     private val compressionLevel: CompressionLevel? = null,
@@ -67,7 +67,7 @@ class CameraDelegate(
                         null
                     }
                     
-                    val photoResult = PhotoResult(
+                    val photoResult = ImageAsset(
                         uri = tempURL.absoluteString ?: "",
                         width = image.size.useContents { width.toInt() },
                         height = image.size.useContents { height.toInt() },

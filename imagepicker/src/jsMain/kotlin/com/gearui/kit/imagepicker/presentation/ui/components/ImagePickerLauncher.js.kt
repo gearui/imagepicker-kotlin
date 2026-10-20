@@ -3,9 +3,9 @@ package com.gearui.kit.imagepicker.presentation.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import com.gearui.kit.imagepicker.domain.config.ImagePickerConfig
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.presentation.config.ImagePickerConfig
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
+import com.gearui.kit.imagepicker.domain.models.ImagePickerResult
 import com.gearui.kit.imagepicker.domain.models.MimeType
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -13,20 +13,6 @@ import org.w3c.dom.*
 import org.w3c.dom.events.Event
 import org.w3c.files.Blob
 import org.w3c.files.FileReader
-
-/**
- * Converts a GalleryPhotoResult to a PhotoResult.
- * Since both models have identical structure, this is a direct mapping.
- */
-private fun GalleryPhotoResult.toPhotoResult(): PhotoResult {
-    return PhotoResult(
-        uri = uri,
-        width = width,
-        height = height,
-        fileName = fileName,
-        fileSize = fileSize
-    )
-}
 
 /**
  * Detects if the current device/context is mobile-friendly.
@@ -51,8 +37,13 @@ private fun isMobileContext(): Boolean {
  */
 @Composable
 actual fun ImagePickerLauncher(
-    config: ImagePickerConfig
+    config: ImagePickerConfig,
+    visible: Boolean
 ) {
+    if (!visible) {
+        return
+    }
+
     val launchKey = remember {
         "${js("Date.now()")}-${config.hashCode()}"
     }
@@ -60,22 +51,26 @@ actual fun ImagePickerLauncher(
     LaunchedEffect(launchKey) {
         try {
             val hasCameraSupport = js("navigator.mediaDevices && navigator.mediaDevices.getUserMedia") != null
-            val allowMultiple = config.cameraCaptureConfig.galleryConfig.allowMultiple
-            val mimeTypes = config.cameraCaptureConfig.galleryConfig.mimeTypes
-            val preferCamera = isMobileContext() && hasCameraSupport
+            val allowMultiple = config.galleryConfig.allowMultiple
+            val mimeTypes = config.galleryConfig.mimeTypes
+            val preferCamera = when {
+                config.directGalleryLaunch -> false
+                config.directCameraLaunch -> hasCameraSupport
+                else -> config.preferCameraWhenAvailable && isMobileContext() && hasCameraSupport
+            }
             
             if (hasCameraSupport && preferCamera) {
                 // Preferir cámara en móviles
                 handleCameraCapture(
                     onSuccess = { result ->
-                        val photoResult = PhotoResult(
+                        val photoResult = ImageAsset(
                             uri = result.uri as String,
                             fileName = result.fileName as String,
                             fileSize = result.fileSize as Long,
                             width = result.width as Int,
                             height = result.height as Int
                         )
-                        config.onPhotoCaptured(photoResult)
+                        config.onResult(ImagePickerResult.Single(photoResult))
                     },
                     onError = { error ->
                         config.onError(Exception(error))
@@ -88,11 +83,11 @@ actual fun ImagePickerLauncher(
                     onSuccess = { result ->
                         if (allowMultiple && result.asDynamic().length != undefined) {
                             // Múltiples archivos
-                            val photos = mutableListOf<GalleryPhotoResult>()
+                            val photos = mutableListOf<ImageAsset>()
                             val resultArray = result.asDynamic()
                             for (i in 0 until resultArray.length.unsafeCast<Int>()) {
                                 val item = resultArray[i]
-                                photos.add(GalleryPhotoResult(
+                                photos.add(ImageAsset(
                                     uri = item.uri as String,
                                     fileName = item.fileName as String,
                                     fileSize = item.fileSize as Long,
@@ -100,17 +95,17 @@ actual fun ImagePickerLauncher(
                                     height = item.height as Int
                                 ))
                             }
-                            config.onPhotosSelected?.invoke(photos)
+                            config.onResult(ImagePickerResult.Multiple(photos))
                         } else {
                             // Un solo archivo
-                            val photoResult = PhotoResult(
+                            val photoResult = ImageAsset(
                                 uri = result.uri as String,
                                 fileName = result.fileName as String,
                                 fileSize = result.fileSize as Long,
                                 width = result.width as Int,
                                 height = result.height as Int
                             )
-                            config.onPhotoCaptured(photoResult)
+                            config.onResult(ImagePickerResult.Single(photoResult))
                         }
                     },
                     onError = { error ->

@@ -2,7 +2,7 @@ package com.gearui.kit.imagepicker.presentation.presenters
 
 import com.gearui.kit.imagepicker.data.delegates.PHPickerDelegate
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
 import platform.PhotosUI.PHPickerFilter
@@ -11,13 +11,13 @@ import platform.PhotosUI.PHPickerViewController
 private var strongPickerDelegate: PHPickerDelegate? = null
 
  fun createPHPickerController(
-    onPhotoSelected: (GalleryPhotoResult) -> Unit,
+    onPhotoSelected: (ImageAsset) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     selectionLimit: Long,
     compressionLevel: CompressionLevel? = null,
     includeExif: Boolean = false,
-    onPhotosSelected: ((List<GalleryPhotoResult>) -> Unit)? = null
+    onPhotosSelected: ((List<ImageAsset>) -> Unit)? = null
 ): PHPickerViewController {
     val configuration = PHPickerConfiguration(
         photoLibrary = PHPhotoLibrary.sharedPhotoLibrary()
@@ -28,11 +28,11 @@ private var strongPickerDelegate: PHPickerDelegate? = null
     val cleanup = { 
         strongPickerDelegate = null
     }
-    val wrappedOnPhotoSelected: (GalleryPhotoResult) -> Unit = { result ->
+    val wrappedOnPhotoSelected: (ImageAsset) -> Unit = { result ->
         onPhotoSelected(result)
         cleanup()
     }
-    val wrappedOnPhotosSelected: ((List<GalleryPhotoResult>) -> Unit)? = if (onPhotosSelected != null) {
+    val wrappedOnPhotosSelected: ((List<ImageAsset>) -> Unit)? = if (onPhotosSelected != null) {
         { results ->
             onPhotosSelected(results)
             cleanup()

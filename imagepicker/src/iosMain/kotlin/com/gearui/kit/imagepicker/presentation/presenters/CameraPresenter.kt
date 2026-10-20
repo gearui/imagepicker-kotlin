@@ -2,7 +2,7 @@ package com.gearui.kit.imagepicker.presentation.presenters
 
 import com.gearui.kit.imagepicker.data.delegates.CameraDelegate
 import com.gearui.kit.imagepicker.domain.exceptions.PhotoCaptureException
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
 import platform.UIKit.UIImagePickerController
 import platform.UIKit.UIImagePickerControllerSourceType
@@ -20,7 +20,7 @@ object CameraPresenter {
 
     fun presentCamera(
         viewController: UIViewController,
-        onPhotoCaptured: (PhotoResult) -> Unit,
+        onPhotoCaptured: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit,
         onDismiss: () -> Unit,
         compressionLevel: CompressionLevel? = null,
@@ -60,7 +60,7 @@ object CameraPresenter {
     }
 
     private fun createImagePickerController(
-        onPhotoCaptured: (PhotoResult) -> Unit,
+        onPhotoCaptured: (ImageAsset) -> Unit,
         onError: (Exception) -> Unit,
         onDismiss: () -> Unit,
         compressionLevel: CompressionLevel? = null,
@@ -72,7 +72,7 @@ object CameraPresenter {
             modalPresentationStyle = UIModalPresentationFullScreen
 
             val cleanup = { cameraDelegate = null }
-            val wrappedOnPhotoCaptured: (PhotoResult) -> Unit = { result ->
+            val wrappedOnPhotoCaptured: (ImageAsset) -> Unit = { result ->
                 onPhotoCaptured(result)
                 cleanup()
             }

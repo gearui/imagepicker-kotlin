@@ -1,4 +1,4 @@
-package com.gearui.kit.imagepicker.domain.config
+package com.gearui.kit.imagepicker.presentation.config
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource

@@ -1,6 +1,6 @@
 package com.gearui.kit.imagepicker.domain.utils
 
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.Foundation.NSDate
@@ -16,10 +16,10 @@ import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 
 @OptIn(ExperimentalForeignApi::class)
- fun saveCroppedImageIOS(
+fun saveCroppedImageIOS(
     image: UIImage,
-    originalPhotoResult: PhotoResult,
-    onComplete: (PhotoResult) -> Unit
+    originalAsset: ImageAsset,
+    onComplete: (ImageAsset) -> Unit
 ) {
     try {
         val documentsPath = NSSearchPathForDirectoriesInDomains(
@@ -39,8 +39,8 @@ import platform.UIKit.UIImageJPEGRepresentation
             
             val fileSizeInBytes = imageData.length.toLong()
 
-            val croppedPhotoResult = PhotoResult(
-                uri = fileURL.absoluteString ?: originalPhotoResult.uri,
+            val croppedAsset = ImageAsset(
+                uri = fileURL.absoluteString ?: originalAsset.uri,
                 width = image.size.useContents { width.toInt() },
                 height = image.size.useContents { height.toInt() },
                 fileName = fileName,
@@ -48,11 +48,11 @@ import platform.UIKit.UIImageJPEGRepresentation
                 mimeType = "image/jpeg"
             )
 
-            onComplete(croppedPhotoResult)
+            onComplete(croppedAsset)
         } else {
-            onComplete(originalPhotoResult)
+            onComplete(originalAsset)
         }
     } catch (_: Exception) {
-        onComplete(originalPhotoResult)
+        onComplete(originalAsset)
     }
 }

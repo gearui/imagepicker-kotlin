@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -29,7 +29,7 @@ class ApplyCropUtilsTest {
     @Test
     fun testApplyCropUtils_withValidInput() = runTest {
         // Arrange
-        val photoResult = PhotoResult(
+        val photoResult = ImageAsset(
             uri = "test://uri",
             width = 100,
             height = 100,
@@ -37,7 +37,7 @@ class ApplyCropUtilsTest {
         )
         val cropRect = Rect(10f, 10f, 50f, 50f)
         val canvasSize = Size(100f, 100f)
-        var completedResult: PhotoResult? = null
+        var completedResult: ImageAsset? = null
 
         every { mockContext.contentResolver } returns mockContentResolver
         every { mockContext.cacheDir } returns File("/tmp")
@@ -79,7 +79,7 @@ class ApplyCropUtilsTest {
     @Test
     fun testApplyCropUtils_withCircularCrop() = runTest {
         // Arrange
-        val photoResult = PhotoResult(
+        val photoResult = ImageAsset(
             uri = "test://uri",
             width = 100,
             height = 100,
@@ -125,7 +125,7 @@ class ApplyCropUtilsTest {
     @Test
     fun testApplyCropUtils_withNullBitmap() = runTest {
         // Arrange
-        val photoResult = PhotoResult(
+        val photoResult = ImageAsset(
             uri = "test://uri",
             width = 100,
             height = 100,
@@ -133,7 +133,7 @@ class ApplyCropUtilsTest {
         )
         val cropRect = Rect(0f, 0f, 100f, 100f)
         val canvasSize = Size(100f, 100f)
-        var completedResult: PhotoResult? = null
+        var completedResult: ImageAsset? = null
 
         every { mockContext.contentResolver } returns mockContentResolver
         every { mockContentResolver.openInputStream(any()) } returns mockInputStream
@@ -167,7 +167,7 @@ class ApplyCropUtilsTest {
         every { mockLandscapeBitmap.width } returns 200
         every { mockLandscapeBitmap.height } returns 100
 
-        val photoResult = PhotoResult(
+        val photoResult = ImageAsset(
             uri = "test://uri",
             width = 200,
             height = 100,
@@ -216,7 +216,7 @@ class ApplyCropUtilsTest {
         every { mockPortraitBitmap.width } returns 100
         every { mockPortraitBitmap.height } returns 200
 
-        val photoResult = PhotoResult(
+        val photoResult = ImageAsset(
             uri = "test://uri",
             width = 100,
             height = 200,
@@ -260,7 +260,7 @@ class ApplyCropUtilsTest {
     @Test
     fun testApplyCropUtils_errorHandling() = runTest {
         // Arrange
-        val photoResult = PhotoResult(
+        val photoResult = ImageAsset(
             uri = "test://uri",
             width = 100,
             height = 100,
@@ -268,7 +268,7 @@ class ApplyCropUtilsTest {
         )
         val cropRect = Rect(0f, 0f, 100f, 100f)
         val canvasSize = Size(100f, 100f)
-        var completedResult: PhotoResult? = null
+        var completedResult: ImageAsset? = null
 
         every { mockContext.contentResolver } returns mockContentResolver
         every { mockContentResolver.openInputStream(any()) } throws Exception("Test exception")
@@ -295,7 +295,7 @@ class ApplyCropUtilsTest {
     @Test
     fun testApplyCropUtils_boundaryConstraints() = runTest {
         // Test crop coordinates that exceed image boundaries
-        val photoResult = PhotoResult(
+        val photoResult = ImageAsset(
             uri = "test://uri",
             width = 100,
             height = 100,

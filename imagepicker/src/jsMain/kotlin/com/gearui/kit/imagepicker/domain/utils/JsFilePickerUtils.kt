@@ -3,7 +3,7 @@ package com.gearui.kit.imagepicker.domain.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.MimeType
 import kotlinx.browser.document
 import org.w3c.dom.HTMLInputElement
@@ -23,7 +23,7 @@ import org.w3c.files.FileReader
  */
 @Composable
 fun JsFilePicker(
-    onPhotosSelected: (List<GalleryPhotoResult>) -> Unit,
+    onPhotosSelected: (List<ImageAsset>) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     allowMultiple: Boolean = false,
@@ -46,7 +46,7 @@ fun JsFilePicker(
                 try {
                     val files = input.files
                     if (files != null && files.length > 0) {
-                        val results = mutableListOf<GalleryPhotoResult>()
+                        val results = mutableListOf<ImageAsset>()
                         var processedCount = 0
                         val totalFiles = minOf(files.length, selectionLimit.toInt())
                         
@@ -58,7 +58,7 @@ fun JsFilePicker(
                                     try {
                                         val result = loadEvent.target?.asDynamic()?.result as? String
                                         if (result != null) {
-                                            val galleryResult = GalleryPhotoResult(
+                                            val galleryResult = ImageAsset(
                                                 uri = result,
                                                 width = 0,
                                                 height = 0,

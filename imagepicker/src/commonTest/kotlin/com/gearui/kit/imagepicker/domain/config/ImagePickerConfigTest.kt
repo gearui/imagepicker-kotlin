@@ -1,8 +1,9 @@
 package com.gearui.kit.imagepicker.domain.config
 
 import com.gearui.kit.imagepicker.domain.models.CapturePhotoPreference
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
+import com.gearui.kit.imagepicker.domain.models.ImagePickerResult
 import com.gearui.kit.imagepicker.domain.models.MimeType
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -93,22 +94,22 @@ class ImagePickerConfigTest {
 
     @Test
     fun `ImagePickerConfig should work with lambda parameters`() {
-        var photoCaptured = false
+        var resultTriggered = false
         var errorOccurred = false
         var dismissed = false
 
         val config = ImagePickerConfig(
-            onPhotoCaptured = { photoCaptured = true },
+            onResult = { resultTriggered = result is ImagePickerResult.Single },
             onError = { errorOccurred = true },
             onDismiss = { dismissed = true }
         )
 
         // Test that lambdas are stored
-        config.onPhotoCaptured(PhotoResult("test", 100, 100))
+        config.onResult(ImagePickerResult.Single(ImageAsset("test", 100, 100)))
         config.onError(Exception("test"))
         config.onDismiss()
 
-        assertTrue(photoCaptured)
+        assertTrue(resultTriggered)
         assertTrue(errorOccurred)
         assertTrue(dismissed)
     }
@@ -116,7 +117,7 @@ class ImagePickerConfigTest {
     @Test
     fun `ImagePickerConfig should have correct default strings`() {
         val config = ImagePickerConfig(
-            onPhotoCaptured = {},
+            onResult = {},
             onError = {}
         )
 
@@ -125,5 +126,6 @@ class ImagePickerConfigTest {
         assertEquals("Select from gallery", config.selectFromGalleryText)
         assertEquals("Cancel", config.cancelText)
         assertFalse(config.directCameraLaunch)
+        assertFalse(config.directGalleryLaunch)
     }
 }

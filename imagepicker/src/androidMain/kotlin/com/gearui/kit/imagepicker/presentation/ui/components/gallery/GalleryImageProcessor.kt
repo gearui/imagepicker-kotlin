@@ -9,7 +9,7 @@ import com.gearui.kit.imagepicker.data.camera.CameraController
 import com.gearui.kit.imagepicker.data.processors.ImageOrientationCorrector
 import com.gearui.kit.imagepicker.domain.models.CompressionLevel
 import com.gearui.kit.imagepicker.domain.models.ExifData
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.utils.DefaultLogger
 import com.gearui.kit.imagepicker.domain.utils.ExifDataExtractor
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +28,7 @@ internal object GalleryImageProcessor {
         uri: Uri,
         compressionLevel: CompressionLevel? = null,
         includeExif: Boolean = false
-    ): GalleryPhotoResult? {
+    ): ImageAsset? {
         return withContext(Dispatchers.IO) {
             try {
                 val fileName = GalleryFileUtils.getFileName(context, uri)
@@ -220,7 +220,7 @@ internal object GalleryImageProcessor {
         mimeType: String?,
         exifData: ExifData?,
         compressionLevel: CompressionLevel?
-    ): GalleryPhotoResult? {
+    ): ImageAsset? {
         val bytes = if (compressionLevel != null) {
             GalleryImageCompressor.compressBitmapToByteArray(bitmap, compressionLevel)
         } else {
@@ -233,7 +233,7 @@ internal object GalleryImageProcessor {
             val fileSizeInBytes = bytes.size.toLong()
             val finalFileName = if (compressionLevel != null) "compressed_$fileName" else fileName
             
-            return GalleryPhotoResult(
+            return ImageAsset(
                 uri = Uri.fromFile(tempFile).toString(),
                 width = bitmap.width,
                 height = bitmap.height,
@@ -255,7 +255,7 @@ internal object GalleryImageProcessor {
         fileName: String?,
         mimeType: String?,
         exifData: ExifData?
-    ): GalleryPhotoResult {
+    ): ImageAsset {
         val options = BitmapFactory.Options().apply {
             inJustDecodeBounds = true
         }
@@ -264,7 +264,7 @@ internal object GalleryImageProcessor {
         val height = options.outHeight
         val fileSizeInBytes = originalBytes.size.toLong()
         
-        return GalleryPhotoResult(
+        return ImageAsset(
             uri = uri.toString(),
             width = width,
             height = height,

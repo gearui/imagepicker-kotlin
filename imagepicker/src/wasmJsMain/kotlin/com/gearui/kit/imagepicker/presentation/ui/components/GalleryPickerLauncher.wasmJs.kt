@@ -1,28 +1,35 @@
 package com.gearui.kit.imagepicker.presentation.ui.components
 
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import com.gearui.kit.imagepicker.domain.config.CameraCaptureConfig
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
+import androidx.compose.runtime.LaunchedEffect
+import com.gearui.kit.imagepicker.domain.config.CropConfig
+import com.gearui.kit.imagepicker.domain.exceptions.ImagePickerErrorCode
+import com.gearui.kit.imagepicker.domain.exceptions.UnsupportedPlatformException
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.models.MimeType
+import com.gearui.kit.imagepicker.presentation.config.CameraCaptureConfig
 
-/**
- * WASM platform implementation of GalleryPickerLauncher.
- * Uses the file picker functionality available in web browsers through WASM.
- */
 @Suppress("LongParameterList")
 @Composable
 actual fun GalleryPickerLauncher(
-    onPhotosSelected: (List<GalleryPhotoResult>) -> Unit,
+    onPhotosSelected: (List<ImageAsset>) -> Unit,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit,
     allowMultiple: Boolean,
     mimeTypes: List<MimeType>,
     selectionLimit: Long,
     cameraCaptureConfig: CameraCaptureConfig?,
-    enableCrop: Boolean,
+    cropConfig: CropConfig,
     fileFilterDescription: String,
     includeExif: Boolean
 ) {
-    Text("GalleryPicker not supported on WASM platform")
+    LaunchedEffect(Unit) {
+        onError(
+            UnsupportedPlatformException(
+                code = ImagePickerErrorCode.GALLERY_NOT_SUPPORTED,
+                message = "Gallery picker is not supported on WASM yet"
+            )
+        )
+        onDismiss()
+    }
 }

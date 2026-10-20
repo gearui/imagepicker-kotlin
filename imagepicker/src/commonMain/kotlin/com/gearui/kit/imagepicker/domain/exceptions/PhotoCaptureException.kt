@@ -8,6 +8,13 @@ package com.gearui.kit.imagepicker.domain.exceptions
  */
 sealed class ImagePickerException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
+enum class ImagePickerErrorCode {
+    PLATFORM_NOT_SUPPORTED,
+    CAMERA_NOT_SUPPORTED,
+    GALLERY_NOT_SUPPORTED,
+    CROP_NOT_SUPPORTED
+}
+
 /**
  * Exception thrown when an error occurs during photo capture.
  */
@@ -22,3 +29,9 @@ class PermissionDeniedException(message: String, cause: Throwable? = null) : Ima
  * Exception thrown when image processing fails.
  */
 class ImageProcessingException(message: String, cause: Throwable? = null) : ImagePickerException(message, cause)
+
+class UnsupportedPlatformException(
+    val code: ImagePickerErrorCode,
+    message: String,
+    cause: Throwable? = null
+) : ImagePickerException(message, cause)

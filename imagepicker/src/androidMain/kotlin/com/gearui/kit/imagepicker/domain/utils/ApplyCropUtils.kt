@@ -7,7 +7,7 @@ import android.graphics.BitmapFactory
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import androidx.core.net.toUri
 import java.io.File
 import java.io.FileOutputStream
@@ -17,11 +17,11 @@ import kotlinx.coroutines.launch
 
 fun applyCropUtils(
     context: Context,
-    photoResult: PhotoResult,
+    photoResult: ImageAsset,
     cropRect: Rect,
     canvasSize: Size,
     isCircularCrop: Boolean,
-    onComplete: (PhotoResult) -> Unit
+    onComplete: (ImageAsset) -> Unit
 ) {
     CoroutineScope(Dispatchers.IO).launch {
         try {
@@ -90,7 +90,7 @@ fun applyCropUtils(
                 
                 val fileSizeInBytes = outputFile.length()
                 
-                val croppedPhotoResult = PhotoResult(
+                val croppedAsset = ImageAsset(
                     uri = outputFile.absolutePath,
                     width = finalBitmap.width,
                     height = finalBitmap.height,
@@ -100,7 +100,7 @@ fun applyCropUtils(
                 )
 
                 CoroutineScope(Dispatchers.Main).launch {
-                    onComplete(croppedPhotoResult)
+                    onComplete(croppedAsset)
                 }
             }
         } catch (e: Exception) {

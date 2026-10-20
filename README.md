@@ -2,7 +2,7 @@
 
 [中文文档](README.zh-Hans.md)
 
-`imagepicker` is an image picker/camera library built for GearUI + KuiklyUI projects.
+`imagepicker` is a Kotlin Multiplatform image picker/camera library for GearUI apps.
 
 ## Coordinates
 
@@ -16,69 +16,77 @@ implementation("com.gearui:imagepicker:<version>")
 - `sample`: GearUI sample app (Android + iOS)
 - `gearui-kit-local`: local linkage to GearUI kit for sample development
 
-## Current platform status
-
-### iOS
-
-- `Choose from gallery`: supported
-- `Take photo`: supported on real devices
-- iOS Simulator camera callback is not reliable across runtime versions; use real device to validate camera flow
-
-### Android
-
-- `Choose from gallery`: supported via `ActivityResultContracts.GetContent`
-- `Take photo`: supported via `ActivityResultContracts.TakePicture` + `FileProvider`
-- Runtime camera permission handled by bridge (`Manifest.permission.CAMERA`)
-
-## Sample run
-
-### Android
-
-```bash
-./gradlew :sample:assembleDebug
-./gradlew :sample:installDebug
-```
-
-### iOS
-
-```bash
-cd sample/iosApp
-xcodebuild -workspace GearUISample.xcworkspace -scheme iosApp -configuration Debug
-```
-
-Or open `sample/iosApp/GearUISample.xcworkspace` in Xcode and run `iosApp` scheme.
-
-## Android integration notes
-
-`sample` demonstrates the native bridge pattern:
-
-- `NativeImagePickerBridge.bind(activity)` in `MainActivity.onCreate`
-- `NativeImagePickerBridge.unbind(activity)` in `MainActivity.onDestroy`
-- Bridge API from common code:
+## Quick start (state API only)
 
 ```kotlin
-NativeImagePickerBridge.open(
-    source = ImagePickerSource.CAMERA, // or GALLERY
-    onPicked = { uri -> /* handle image */ },
-    onError = { message -> /* show error */ },
-    onCancel = { /* handle cancel */ }
+import com.gearui.kit.imagepicker.presentation.api.ImagePicker
+import com.gearui.kit.imagepicker.presentation.api.ImagePickerSimpleConfig
+import com.gearui.kit.imagepicker.presentation.api.ImagePickerSource
+import com.gearui.kit.imagepicker.presentation.api.rememberImagePickerState
+
+val pickerState = rememberImagePickerState()
+
+Button(onClick = { pickerState.show() }) { Text("Pick image") }
+
+ImagePicker(
+    state = pickerState,
+    onResult = { result -> /* handle Single/Multiple */ },
+    onError = { e -> /* handle error */ },
+    config = ImagePickerSimpleConfig(
+        source = ImagePickerSource.CameraOrGallery,
+        multiple = false,
+        cropEnabled = true
+    )
 )
 ```
 
-Manifest requirements (already configured in sample):
+Only state-driven APIs are supported.
 
-- `android.permission.CAMERA`
-- `androidx.core.content.FileProvider` with `@xml/file_paths`
+Single-image launcher:
 
-## iOS integration notes
+```kotlin
+import com.gearui.kit.imagepicker.presentation.api.ImagePickerSource
+import com.gearui.kit.imagepicker.presentation.api.rememberSingleImagePickerLauncher
 
-`sample` uses UIKit picker from Kotlin/Native and dispatches presentation to main thread before calling `presentViewController`.
+val launchSinglePicker = rememberSingleImagePickerLauncher(
+    source = ImagePickerSource.GalleryOnly,
+    onPicked = { asset -> /* upload */ },
+    onError = { e -> /* handle */ }
+)
 
-Info.plist requirements (already configured in sample):
+Button(onClick = launchSinglePicker) { Text("Pick") }
+```
 
-- `NSCameraUsageDescription`
-- `NSPhotoLibraryUsageDescription`
-- `NSPhotoLibraryAddUsageDescription`
+## Bytes API
+
+```kotlin
+import com.gearui.kit.imagepicker.domain.extensions.readBytes
+import com.gearui.kit.imagepicker.domain.models.BytesPolicy
+
+val original = asset.readBytes(BytesPolicy.ORIGINAL)
+val optimized = asset.readBytes(BytesPolicy.OPTIMIZED)
+```
+
+- `readBytes()` is async and policy-driven.
+- `loadBytes()` remains as a compatibility wrapper (sync, internally maps to optimized policy).
+
+## Platform capability matrix
+
+| Platform | Gallery | Camera | Crop |
+|---|---|---|---|
+| Android | ✅ | ✅ | ✅ |
+| iOS (real device) | ✅ | ✅ | ✅ |
+| iOS Simulator | ✅ | ⚠️ runtime/simulator dependent | ✅ |
+| JVM Desktop | ✅ (file picker) | ❌ | ❌ |
+| JS (Browser) | ✅ | ✅ (browser permission/device support) | ✅ |
+| WASM | ❌ | ❌ | ❌ |
+
+Unsupported capability returns `UnsupportedPlatformException` with `ImagePickerErrorCode`:
+
+- `PLATFORM_NOT_SUPPORTED`
+- `CAMERA_NOT_SUPPORTED`
+- `GALLERY_NOT_SUPPORTED`
+- `CROP_NOT_SUPPORTED`
 
 ## Development
 

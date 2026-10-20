@@ -11,14 +11,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.gearui.kit.imagepicker.domain.config.CameraCaptureConfig
-import com.gearui.kit.imagepicker.domain.config.CameraPreviewConfig
-import com.gearui.kit.imagepicker.domain.config.PermissionConfig
-import com.gearui.kit.imagepicker.domain.config.UiConfig
+import com.gearui.kit.imagepicker.presentation.config.CameraCaptureConfig
+import com.gearui.kit.imagepicker.presentation.config.CameraPreviewConfig
+import com.gearui.kit.imagepicker.domain.config.CropConfig
+import com.gearui.kit.imagepicker.domain.config.GalleryConfig
+import com.gearui.kit.imagepicker.presentation.config.PermissionConfig
+import com.gearui.kit.imagepicker.presentation.config.UiConfig
 import com.gearui.kit.imagepicker.domain.exceptions.PhotoCaptureException
 import com.gearui.kit.imagepicker.domain.models.CapturePhotoPreference
-import com.gearui.kit.imagepicker.domain.models.GalleryPhotoResult
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.utils.defaultCameraPermissionDialogConfig
 import com.gearui.kit.imagepicker.domain.utils.playShutterSound
 import com.gearui.kit.imagepicker.presentation.ui.components.CameraCapturePreview
@@ -36,15 +37,17 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun CameraCaptureView(
     activity: ComponentActivity,
-    onPhotoResult: (PhotoResult) -> Unit,
-    onPhotosSelected: ((List<GalleryPhotoResult>) -> Unit)? = null,
+    onPhotoResult: (ImageAsset) -> Unit,
+    onPhotosSelected: ((List<ImageAsset>) -> Unit)? = null,
     onError: (Exception) -> Unit,
     onDismiss: () -> Unit = {},
     cameraCaptureConfig: CameraCaptureConfig = CameraCaptureConfig(preference = CapturePhotoPreference.QUALITY),
-    enableCrop: Boolean = false
+    galleryConfig: GalleryConfig = GalleryConfig(),
+    cropConfig: CropConfig = CropConfig(),
+    enableCrop: Boolean = cropConfig.enabled
 ) {
     val context = LocalContext.current
-    var photoResult by remember { mutableStateOf<PhotoResult?>(null) }
+    var photoResult by remember { mutableStateOf<ImageAsset?>(null) }
     var showCropView by remember { mutableStateOf(false) }
     var hasPermission by remember { mutableStateOf(false) }
 
@@ -79,8 +82,8 @@ fun CameraCaptureView(
             enableCrop && showCropView && photoResult != null -> {
                 ImageCropView(
                     photoResult = photoResult!!,
-                    cropConfig = cameraCaptureConfig.cropConfig,
-                    onAccept = { croppedResult: PhotoResult ->
+                    cropConfig = cropConfig,
+                    onAccept = { croppedResult: ImageAsset ->
                         showCropView = false
                         onPhotoResult(croppedResult)
                     },
@@ -91,9 +94,9 @@ fun CameraCaptureView(
                 )
             }
 
-            cameraCaptureConfig.galleryConfig.allowMultiple && onPhotosSelected != null -> {
+            galleryConfig.allowMultiple && onPhotosSelected != null -> {
                 GalleryPickerLauncher(
-                    onPhotosSelected = { results: List<GalleryPhotoResult> ->
+                    onPhotosSelected = { results: List<ImageAsset> ->
                         onPhotosSelected(
                             results
                         )
@@ -104,18 +107,19 @@ fun CameraCaptureView(
                     },
                     onDismiss = onDismiss,
                     allowMultiple = true,
-                    mimeTypes = cameraCaptureConfig.galleryConfig.mimeTypes,
-                    selectionLimit = cameraCaptureConfig.galleryConfig.selectionLimit.toLong(),
+                    mimeTypes = galleryConfig.mimeTypes,
+                    selectionLimit = galleryConfig.selectionLimit.toLong(),
                     cameraCaptureConfig = cameraCaptureConfig,
-                    enableCrop = false,
+                    cropConfig = cropConfig,
                     fileFilterDescription = "Image files",
-                    includeExif = cameraCaptureConfig.galleryConfig.includeExif
+                    includeExif = galleryConfig.includeExif
                 )
             }
 
             photoResult == null -> {
                 CameraAndPreview(
                     cameraCaptureConfig = cameraCaptureConfig,
+                    galleryConfig = galleryConfig,
                     onPhotoResult = { result ->
                         photoResult = result
                         if (enableCrop) {
@@ -181,7 +185,8 @@ private fun PermissionHandler(
 @Composable
 private fun CameraAndPreview(
     cameraCaptureConfig: CameraCaptureConfig,
-    onPhotoResult: (PhotoResult) -> Unit,
+    galleryConfig: GalleryConfig,
+    onPhotoResult: (ImageAsset) -> Unit,
     onError: (Exception) -> Unit
 ) {
     CameraCapturePreview(
@@ -192,7 +197,7 @@ private fun CameraAndPreview(
             captureButtonSize = cameraCaptureConfig.captureButtonSize,
             uiConfig = cameraCaptureConfig.uiConfig,
             cameraCallbacks = cameraCaptureConfig.cameraCallbacks,
-            galleryConfig = cameraCaptureConfig.galleryConfig
+            galleryConfig = galleryConfig
         ),
         compressionLevel = cameraCaptureConfig.compressionLevel,
         includeExif = cameraCaptureConfig.includeExif
@@ -201,10 +206,10 @@ private fun CameraAndPreview(
 
 @Composable
 private fun ConfirmationView(
-    photoResult: PhotoResult,
-    onConfirm: (PhotoResult) -> Unit,
+    photoResult: ImageAsset,
+    onConfirm: (ImageAsset) -> Unit,
     onRetry: () -> Unit,
-    customConfirmationView: (@Composable (PhotoResult, (PhotoResult) -> Unit, () -> Unit) -> Unit)? = null,
+    customConfirmationView: (@Composable (ImageAsset, (ImageAsset) -> Unit, () -> Unit) -> Unit)? = null,
     uiConfig: UiConfig = UiConfig()
 ) {
     ImageConfirmationViewWithCustomButtons(

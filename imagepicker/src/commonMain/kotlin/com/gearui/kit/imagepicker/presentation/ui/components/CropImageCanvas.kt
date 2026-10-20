@@ -27,7 +27,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.gearui.kit.imagepicker.domain.models.CropHandle
-import com.gearui.kit.imagepicker.domain.models.PhotoResult
+import com.gearui.kit.imagepicker.domain.models.ImageAsset
 import com.gearui.kit.imagepicker.domain.utils.drawCropHandles
 import com.gearui.kit.imagepicker.domain.utils.resizeCropRect
 import com.gearui.kit.imagepicker.presentation.ui.components.helper.utility.CropUtils.detectHandle
@@ -37,7 +37,7 @@ import kotlin.math.min
 
 @Composable
  fun CropImageCanvas(
-    photoResult: PhotoResult,
+    photoResult: ImageAsset,
     zoomLevel: Float,
     rotationAngle: Float,
     cropRect: Rect,
